@@ -5,5 +5,8 @@
 /server/dist
 /server/node_modules
 
+#shared
+/node_modules
+
 # OS
 **/.DS_Store
