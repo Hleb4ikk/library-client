@@ -1,5 +1,5 @@
-import express from "express";
-import { appConfig } from "@/appConfig.js";
+import express from 'express';
+import { appConfig } from '@/appConfig.js';
 
 const app = express();
 
