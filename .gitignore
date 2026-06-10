@@ -1,0 +1,9 @@
+# client
+
+# server
+/server/.env
+/server/dist
+/server/node_modules
+
+# OS
+**/.DS_Store
