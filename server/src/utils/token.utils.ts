@@ -1,10 +1,12 @@
-import jwt, { type JwtPayload, type SignOptions } from 'jsonwebtoken';
+import jwt, { type SignOptions } from 'jsonwebtoken';
 
 import { appConfig } from '@/appConfig.js';
+import {
+  accessTokenPayloadSchema,
+  type AccessTokenPayload,
+} from '@/schemas/access-token-payload.schema.js';
 
-export interface AccessTokenPayload {
-  userId: string;
-}
+export type { AccessTokenPayload };
 
 const BEARER_SCHEME = 'bearer';
 
@@ -15,27 +17,19 @@ const accessTokenSignOptions: SignOptions = {
   >,
 };
 
-function parseAccessTokenPayload(payload: JwtPayload | string): AccessTokenPayload {
-  if (typeof payload === 'string') {
-    throw new Error('Invalid token payload');
-  }
+function parseAccessTokenPayload(payload: unknown): AccessTokenPayload | null {
+  const result = accessTokenPayloadSchema.safeParse(payload);
 
-  const { userId } = payload;
-
-  if (typeof userId !== 'string' || userId.length === 0) {
-    throw new Error('Invalid token payload: userId is required');
-  }
-
-  return { userId };
+  return result.success ? result.data : null;
 }
 
 export function generateAccessToken(userId: string): string {
-  return jwt.sign({ userId }, appConfig.jwt.secret, accessTokenSignOptions);
+  return jwt.sign({ userId }, appConfig.jwt.secret!, accessTokenSignOptions);
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload | null {
   try {
-    const decoded = jwt.verify(token, appConfig.jwt.secret, {
+    const decoded = jwt.verify(token, appConfig.jwt.secret!, {
       algorithms: ['HS256'],
     });
 
@@ -52,11 +46,7 @@ export function decodeAccessToken(token: string): AccessTokenPayload | null {
     return null;
   }
 
-  try {
-    return parseAccessTokenPayload(decoded);
-  } catch {
-    return null;
-  }
+  return parseAccessTokenPayload(decoded);
 }
 
 export function extractBearerToken(
