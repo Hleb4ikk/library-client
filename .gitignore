@@ -22,7 +22,6 @@
 /client/*.sln
 /client/*.sw?
 
-
 # server
 /server/.env
 /server/dist
