@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 
 import { extractBearerToken, verifyAccessToken } from "@/utils/token.utils.js";
+import ApiError from "@/classes/ApiError.js";
 
 declare module "express-serve-static-core" {
   interface Request {
@@ -16,15 +17,13 @@ export function authMiddleware(
   const token = extractBearerToken(req.headers.authorization);
 
   if (!token) {
-    res.status(401).json({ success: false, message: "Unauthorized" });
-    return;
+    throw new ApiError(401, "Unauthorized");
   }
 
   const payload = verifyAccessToken(token);
 
   if (!payload) {
-    res.status(401).json({ success: false, message: "Unauthorized" });
-    return;
+    throw new ApiError(401, "Unauthorized");
   }
 
   req.userId = payload.userId;

@@ -1,8 +1,11 @@
-import express from 'express';
+import express from "express";
 
-import { appConfig } from '@/appConfig.js';
+import { appConfig } from "@/appConfig.js";
+import { errorHandler } from "./middleware/error.handler.js";
 
 const app = express();
+
+app.use(errorHandler);
 
 app.listen(appConfig.port, (error) => {
   if (!error) {
