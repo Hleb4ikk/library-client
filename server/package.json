@@ -15,8 +15,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "5.0.6",
-    "@types/node": "25.9.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.9.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "9.39.4",
     "eslint-config-prettier": "10.1.8",
@@ -28,9 +30,12 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.1",
+    "bcrypt": "^6.0.0",
     "dotenv": "17.4.2",
     "drizzle-orm": "^0.45.2",
     "express": "5.2.1",
-    "postgres": "^3.4.9"
+    "jsonwebtoken": "^9.0.3",
+    "postgres": "^3.4.9",
+    "zod": "^4.4.3"
   }
 }

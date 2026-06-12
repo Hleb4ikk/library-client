@@ -4,6 +4,7 @@ import { appConfig } from '@/appConfig.js';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import 'dotenv/config';
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 const connectionString = process.env.DATABASE_URL;
@@ -17,6 +18,9 @@ const client = postgres(connectionString, { prepare: false });
 export const db = drizzle(client);
 
 console.log("✅ Drizzle инициализирован");
+
+app.use(express.json());
+app.use('/api/auth', authRoutes);
 
 app.listen(appConfig.port, (error) => {
   if (!error) {
