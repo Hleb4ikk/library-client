@@ -1,26 +1,14 @@
-import express from 'express';
-
-import { appConfig } from '@/appConfig.js';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import 'dotenv/config';
-import authRoutes from './routes/auth.routes.js';
+import express from "express";
+import { appConfig } from "@/appConfig.js";
+import authRoutes from "./routes/auth.routes.js";
+import { errorHandler } from "./middleware/error.handler.js";
 
 const app = express();
-const connectionString = process.env.DATABASE_URL;
 
-if (!connectionString) {
-  throw new Error("❌ ОШИБКА: Переменная DATABASE_URL не найдена в файле .env");
-}
-
-const client = postgres(connectionString, { prepare: false });
-
-export const db = drizzle(client);
-
-console.log("✅ Drizzle инициализирован");
+app.use(errorHandler);
 
 app.use(express.json());
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
 
 app.listen(appConfig.port, (error) => {
   if (!error) {
