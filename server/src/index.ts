@@ -1,6 +1,7 @@
 import express from "express";
 
 import { appConfig } from "@/appConfig.js";
+import "dotenv/config";
 import { errorHandler } from "./middleware/error.handler.js";
 
 const app = express();
