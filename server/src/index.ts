@@ -6,6 +6,8 @@ import { errorHandler } from "./middleware/error.handler.js";
 
 const app = express();
 
+app.use(express.json());
+
 app.use(errorHandler);
 
 app.listen(appConfig.port, (error) => {
