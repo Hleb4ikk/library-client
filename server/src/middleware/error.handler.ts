@@ -5,7 +5,7 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
   if (err instanceof ApiError) {
     return res
       .status(err.status)
-      .json({ success: false, message: err.message });
+      .json({ success: false, message: err.message, description: err.description });
   }
 
   return res.status(500).json({ success: false, message: err.message });
