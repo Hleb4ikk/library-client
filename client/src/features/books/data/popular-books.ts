@@ -1,0 +1,65 @@
+import type { Book } from "../types/book";
+
+export const popularBooks: Book[] = [
+    {
+        id: "thinking-fast-and-slow",
+        title: "Thinking, Fast and Slow",
+        author: "Daniel Kahneman",
+        cover: "https://covers.openlibrary.org/b/isbn/9780374533557-L.jpg",
+        status: "Хочу прочитать",
+        likes: 142,
+    },
+    {
+        id: "the-great-gatsby",
+        title: "The Great Gatsby",
+        author: "F. Scott Fitzgerald",
+        cover: "https://covers.openlibrary.org/b/isbn/9780743273565-L.jpg",
+        status: "Читаю",
+        likes: 287,
+        isLiked: true,
+    },
+    {
+        id: "1984",
+        title: "1984",
+        author: "George Orwell",
+        cover: "https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg",
+        status: "Прочитано",
+        likes: 412,
+    },
+    {
+        id: "to-kill-a-mockingbird",
+        title: "To Kill a Mockingbird",
+        author: "Harper Lee",
+        cover: "https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg",
+        likes: 356,
+        isLiked: true,
+    },
+    {
+        id: "pride-and-prejudice",
+        title: "Pride and Prejudice",
+        author: "Jane Austen",
+        cover: "https://covers.openlibrary.org/b/isbn/9780141439518-L.jpg",
+        likes: 231,
+    },
+    {
+        id: "the-little-prince",
+        title: "The Little Prince",
+        author: "Antoine de Saint-Exupéry",
+        cover: "https://covers.openlibrary.org/b/isbn/9780156012195-L.jpg",
+        likes: 525,
+    },
+    {
+        id: "brave-new-world",
+        title: "Brave New World",
+        author: "Aldous Huxley",
+        cover: "https://covers.openlibrary.org/b/isbn/9780060850524-L.jpg",
+        likes: 198,
+    },
+    {
+        id: "the-hobbit",
+        title: "The Hobbit",
+        author: "J. R. R. Tolkien",
+        cover: "https://covers.openlibrary.org/b/isbn/9780547928227-L.jpg",
+        likes: 674,
+    },
+];
