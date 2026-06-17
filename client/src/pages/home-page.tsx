@@ -1,22 +1,28 @@
 import { useMemo, useState } from "react";
 
 import { Badge, Button, Logo } from "../components/shared";
+import { useUser } from "../features/auth/user-provider";
 import BookGrid from "../features/books/components/book-grid";
 import BookSearchForm from "../features/books/components/book-search-form";
 import { popularBooks } from "../features/books/data/popular-books";
 import AppHeader from "../layouts/app-header";
-import { useUser } from "../features/auth/user-provider";
 
-const stats = [
-    { value: "5M+", label: "Книг в базе" },
-    { value: "1.2K", label: "Пользователей" },
-    { value: "8.4K", label: "Комментариев" },
-    { value: "32K", label: "Лайков" },
-];
+function formatStatValue(value: number) {
+    if (value >= 1_000_000) {
+        return `${(value / 1_000_000).toFixed(1)}M`;
+    }
+
+    if (value >= 1_000) {
+        return `${(value / 1_000).toFixed(1)}K`;
+    }
+
+    return String(value);
+}
 
 export default function HomePage() {
     const { user } = useUser();
     const isAuthorized = Boolean(user);
+
     const [searchValue, setSearchValue] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -34,6 +40,29 @@ export default function HomePage() {
         });
     }, [searchQuery]);
 
+    const totalLikes = useMemo(() => {
+        return popularBooks.reduce((sum, book) => sum + book.likes, 0);
+    }, []);
+
+    const stats = [
+        {
+            value: formatStatValue(popularBooks.length),
+            label: "Книг в базе",
+        },
+        {
+            value: "1",
+            label: "Пользователей",
+        },
+        {
+            value: "0",
+            label: "Комментариев",
+        },
+        {
+            value: formatStatValue(totalLikes),
+            label: "Лайков",
+        },
+    ];
+
     function handleSearchSubmit() {
         setSearchQuery(searchValue.trim());
     }
@@ -48,7 +77,7 @@ export default function HomePage() {
             <AppHeader />
 
             <main>
-                <section className="bg-gradient-to-br from-fern via-fern to-fern-dark px-4 py-20 text-center sm:px-6 lg:px-8 lg:py-28">
+                <section className="bg-linear-to-br from-fern via-fern to-fern-dark px-4 py-20 text-center sm:px-6 lg:px-8 lg:py-28">
                     <div className="mx-auto max-w-4xl">
                         <Logo variant="hero" className="justify-center" />
 
