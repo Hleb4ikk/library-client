@@ -13,7 +13,10 @@ export async function register(req: Request, res: Response) {
         });
     }
     catch (error) {
-        throw new ApiError(400, (error as Error).message);
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, 'Ошибка при регистрации');
     }
 }
 
