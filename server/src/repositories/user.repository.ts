@@ -8,6 +8,11 @@ export async function createUser(data: NewUser): Promise<{id: number, username: 
     return user;
 }
 
+export async function findUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+}
+
 export async function findUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { registerUser } from "@/services/auth.service.js";
+import { authenticateUser, registerUser } from "@/services/auth.service.js";
 import ApiError from "@/classes/ApiError.js";
 
 export async function register(req: Request, res: Response) {
@@ -17,5 +17,23 @@ export async function register(req: Request, res: Response) {
             throw error;
         }
         throw new ApiError(500, 'Ошибка при регистрации');
+    }
+}
+
+export async function login(req: Request, res: Response) {
+    try {
+        const { username, password } = req.body;
+        const result = await authenticateUser(username, password);
+        return res.status(200).json({
+            success: true,
+            message: 'Успешный вход',
+            data: result
+        });
+    }
+    catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, 'Ошибка при авторизации');
     }
 }
