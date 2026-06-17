@@ -1,7 +1,6 @@
 import express from "express";
-
 import { appConfig } from "@/appConfig.js";
-import "dotenv/config";
+import authRoutes from "./routes/auth.routes.js";
 import { errorHandler } from "./middleware/error.handler.js";
 
 const app = express();
@@ -9,6 +8,9 @@ const app = express();
 app.use(express.json());
 
 app.use(errorHandler);
+
+app.use(express.json());
+app.use("/api/auth", authRoutes);
 
 app.listen(appConfig.port, (error) => {
   if (!error) {
