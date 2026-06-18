@@ -29,9 +29,7 @@ export default function BookCommentsSection({
     async function handleCreateComment() {
         const trimmedText = commentText.trim();
 
-        if (!trimmedText || !isAuthorized) {
-            return;
-        }
+        if (!trimmedText || !isAuthorized) return;
 
         setIsCreating(true);
 
@@ -51,8 +49,8 @@ export default function BookCommentsSection({
     }
 
     return (
-        <section className="rounded-3xl border border-natural/20 bg-ivory-card px-6 py-7 shadow-page sm:px-8">
-            <div className="mb-7 flex items-center gap-3">
+        <section className="rounded-3xl border border-natural/20 bg-ivory-card px-4 py-6 shadow-page sm:px-8 sm:py-7">
+            <div className="mb-6 flex flex-wrap items-center gap-3 sm:mb-7">
                 <h2 className="flex items-center gap-3 text-2xl font-bold text-fern">
                     <span className="text-apricot">▱</span>
                     Комментарии
@@ -63,69 +61,71 @@ export default function BookCommentsSection({
                 </span>
             </div>
 
-            <div className="flex items-start gap-3">
-                <Textarea
-                    value={commentText}
-                    onChange={(event) => setCommentText(event.target.value)}
-                    placeholder={
-                        isAuthorized
-                            ? "Поделитесь мнением о книге..."
-                            : "Войдите, чтобы оставить комментарий"
-                    }
-                    disabled={!isAuthorized || isCreating}
-                    className="min-h-28 resize-none bg-ivory"
-                />
+            {isAuthorized ? (
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                    <Textarea
+                        value={commentText}
+                        onChange={(event) => setCommentText(event.target.value)}
+                        placeholder="Поделитесь мнением о книге..."
+                        disabled={isCreating}
+                        className="min-h-28 resize-none bg-ivory"
+                    />
 
-                <Button
-                    onClick={handleCreateComment}
-                    disabled={!isAuthorized || isCreating || !commentText.trim()}
-                    className="mt-14 h-12 w-12 shrink-0 rounded-2xl px-0 text-2xl"
-                    aria-label="Добавить комментарий"
-                    title={
-                        isAuthorized
-                            ? "Добавить комментарий"
-                            : "Войдите, чтобы оставить комментарий"
-                    }
-                >
-                    +
-                </Button>
-            </div>
+                    <Button
+                        onClick={handleCreateComment}
+                        disabled={isCreating || !commentText.trim()}
+                        className="h-12 w-full shrink-0 rounded-2xl px-0 text-xl sm:mt-14 sm:w-12"
+                        aria-label="Добавить комментарий"
+                        title="Добавить комментарий"
+                    >
+                        +
+                    </Button>
+                </div>
+            ) : (
+                <div className="rounded-2xl border border-natural/20 bg-ivory px-5 py-4 text-sm text-natural-text">
+                    Войдите в аккаунт, чтобы оставить комментарий.
+                </div>
+            )}
 
             <div className="mt-6 space-y-4">
                 {comments.map((comment) => (
                     <article
                         key={comment.id}
-                        className="rounded-2xl border border-natural/20 bg-ivory px-4 py-4"
+                        className="overflow-hidden rounded-2xl border border-natural/20 bg-ivory px-4 py-4"
                     >
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-natural text-sm font-bold text-ivory">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-natural text-sm font-bold text-ivory">
                                     {comment.authorInitials}
                                 </div>
 
-                                <div className="flex items-center gap-2">
-                                    <p className="font-bold text-fern">
+                                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                    <p className="min-w-0 truncate font-bold text-fern">
                                         {comment.authorName}
                                     </p>
 
-                                    {comment.isOwn && <Badge>Вы</Badge>}
+                                    {isAuthorized && comment.isOwn && (
+                                        <Badge>Вы</Badge>
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 text-sm text-natural-text">
-                                <span>{comment.createdAt}</span>
+                            <div className="flex w-full flex-wrap items-center justify-between gap-2 text-sm text-natural-text sm:w-auto sm:justify-end">
+                                <span className="shrink-0">
+                                    {comment.createdAt}
+                                </span>
 
                                 {isAuthorized && comment.isOwn && (
-                                    <>
+                                    <div className="flex shrink-0 items-center gap-1">
                                         <IconButton
                                             aria-label="Редактировать"
                                             title="Редактировать"
-                                            className="text-natural hover:text-apricot"
+                                            className="h-9 w-9 shrink-0 text-natural hover:text-apricot sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                                         >
                                             <svg
                                                 viewBox="0 0 24 24"
                                                 aria-hidden="true"
-                                                className="h-5 w-5"
+                                                className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 strokeWidth="2"
@@ -140,12 +140,12 @@ export default function BookCommentsSection({
                                         <IconButton
                                             aria-label="Удалить"
                                             title="Удалить"
-                                            className="text-error hover:text-error"
+                                            className="h-9 w-9 shrink-0 text-error hover:text-error sm:h-10 sm:w-10 lg:h-11 lg:w-11"
                                         >
                                             <svg
                                                 viewBox="0 0 24 24"
                                                 aria-hidden="true"
-                                                className="h-5 w-5"
+                                                className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 strokeWidth="2"
@@ -159,12 +159,12 @@ export default function BookCommentsSection({
                                                 <path d="M14 11v6" />
                                             </svg>
                                         </IconButton>
-                                    </>
+                                    </div>
                                 )}
                             </div>
                         </div>
 
-                        <p className="mt-4 text-base leading-6 text-fern">
+                        <p className="mt-4 break-words text-base leading-6 text-fern">
                             {comment.text}
                         </p>
                     </article>
