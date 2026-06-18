@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Badge, Button, Logo } from "../components/shared";
 import { useUser } from "../features/auth/user-provider";
@@ -25,6 +26,7 @@ export default function HomePage() {
 
     const [searchValue, setSearchValue] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    const navigate = useNavigate();
 
     const visibleBooks = useMemo(() => {
         const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -136,12 +138,8 @@ export default function HomePage() {
                         <BookGrid
                             books={visibleBooks}
                             isAuthorized={isAuthorized}
-                            onOpenBook={(book) =>
-                                console.log("open book", book.id)
-                            }
-                            onLikeBook={(book) =>
-                                console.log("like book", book.id)
-                            }
+                            onOpenBook={(book) => navigate(`/books/${book.id}`)}
+                            onLikeBook={(book) => console.log("like book", book.id)}
                         />
                     ) : (
                         <div className="rounded-2xl border border-natural/25 bg-ivory-card px-6 py-12 text-center shadow-card">
