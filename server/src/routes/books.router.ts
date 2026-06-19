@@ -6,7 +6,8 @@ import {
   getComments, 
   createComment, 
   updateComment, 
-  deleteComment 
+  deleteComment,
+  toggleBookLike 
 } from "../controllers/books.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { validationMiddleware } from "../middleware/validation.middleware.js";
@@ -61,6 +62,13 @@ booksRouter.delete(
   authMiddleware, 
   validationMiddleware(commentIdParamSchema, "params"), 
   deleteComment
+);
+
+booksRouter.post(
+  "/:olid/like",
+  authMiddleware,
+  validationMiddleware(bookOlidParamSchema, "params"),
+  toggleBookLike
 );
 
 export default booksRouter;

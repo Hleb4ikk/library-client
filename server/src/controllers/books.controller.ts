@@ -121,3 +121,23 @@ export async function deleteComment(req: Request, res: Response) {
     throw new ApiError(500, 'Ошибка при удалении комментария');
   }
 }
+
+export async function toggleBookLike(req: Request, res: Response) {
+  try {
+    const OlsonId = String(req.params.olid);
+    const currentUserId = Number((req as any).user.id); 
+
+    const result = await booksService.toggleLike(OlsonId, currentUserId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Статус лайка изменен",
+      data: result
+    });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(500, 'Ошибка при обработке лайка');
+  }
+}

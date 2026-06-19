@@ -1,6 +1,7 @@
 import axios from "axios";
 import { booksRepository } from "@/repositories/books.repository.js";
 import ApiError from "@/classes/ApiError.js";
+import { wsService } from "./ws.service.js";
 const OPEN_LIBRARY_URL = 'https://openlibrary.org';
 
 export const booksService = {
@@ -94,5 +95,21 @@ export const booksService = {
     if (relation.userId !== userId) throw new ApiError(403, 'Доступ запрещен: вы не являетесь автором этого комментария');
 
     await booksRepository.deleteComment(commentId);
+  },
+
+  async toggleLike(olid: string, userId: number) {
+    const isLiked = await booksRepository.checkIsLiked(olid, userId);
+    
+    if (isLiked) {
+      await booksRepository.removeLike(olid, userId);
+    } else {
+      await booksRepository.addLike(olid, userId);
+    }
+
+    const newLikesCount = await booksRepository.getLikesCount(olid);
+
+    wsService.broadcastLikesUpdate(olid, newLikesCount);
+
+    return { is_liked: !isLiked, likes_count: newLikesCount };
   }
 };

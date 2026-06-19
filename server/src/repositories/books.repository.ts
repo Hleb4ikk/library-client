@@ -84,5 +84,17 @@ export const booksRepository = {
 
   async deleteComment(commentId: number) {
     await db.delete(comments).where(eq(comments.id, commentId));
+  },
+  async addLike(bookOlid: string, userId: number) {
+    return await db.insert(likes).values({ bookOlid, userId });
+  },
+
+  async removeLike(bookOlid: string, userId: number) {
+    return await db.delete(likes).where(
+      and(
+        eq(likes.bookOlid, bookOlid),
+        eq(likes.userId, userId)
+      )
+    );
   }
 };
