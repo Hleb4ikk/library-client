@@ -10,4 +10,5 @@ export const appConfig = {
     saltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) ?? 10,
   },
   databaseUrl: process.env.DATABASE_URL!,
+  redisUrl: process.env.REDIS_URL!,
 };
