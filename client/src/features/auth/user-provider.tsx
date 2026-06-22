@@ -6,7 +6,7 @@ import {
     useMemo,
     useState,
 } from "react";
-import type { ReactNode } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import { MOCK_CURRENT_USER } from "./mock-user";
 import type { User } from "./user";
@@ -16,6 +16,7 @@ type UserContextType = {
     isLoading: boolean;
     error: string | null;
     fetchUser: () => Promise<void>;
+    setUser: Dispatch<SetStateAction<User | null>>;
 };
 
 type UserProviderProps = {
@@ -65,6 +66,7 @@ export default function UserProvider({ children }: UserProviderProps) {
             isLoading,
             error,
             fetchUser,
+            setUser,
         }),
         [user, isLoading, error, fetchUser]
     );
