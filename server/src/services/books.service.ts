@@ -1,5 +1,6 @@
 import axios from "axios";
-import { booksRepository } from "@/repositories/books.repository.js";
+import { likesRepository } from "@/repositories/likes.repository.js";
+import { commentsRepository } from "@/repositories/comments.repository.js";
 import ApiError from "@/classes/ApiError.js";
 import { wsService } from "./ws.service.js";
 const OPEN_LIBRARY_URL = 'https://openlibrary.org';
@@ -31,8 +32,8 @@ export const booksService = {
   async getBookDetails(olid: string, currentUserId: number | null) {
     const [apiResponse, likesCount, commentsCount] = await Promise.all([
       axios.get(`${OPEN_LIBRARY_URL}/works/${olid}.json`).catch(() => null),
-      booksRepository.getLikesCount(olid),
-      booksRepository.getCommentsCount(olid)
+      likesRepository.getLikesCount(olid),
+      commentsRepository.getCommentsCount(olid)
     ]);
 
     if (!apiResponse) throw new ApiError(404, 'Книга не найдена в Open Library');
@@ -42,7 +43,7 @@ export const booksService = {
     if (typeof data.description === 'string') description = data.description;
     else if (data.description && data.description.value) description = data.description.value;
 
-    const isLiked = currentUserId ? await booksRepository.checkIsLiked(olid, currentUserId) : false;
+    const isLiked = currentUserId ? await likesRepository.checkIsLiked(olid, currentUserId) : false;
 
     return {
       olid,
@@ -61,20 +62,20 @@ export const booksService = {
     const offset = (page - 1) * limit;
 
     const [commentsList, totalCount] = await Promise.all([
-      booksRepository.getCommentsList(olid, limit, offset),
-      booksRepository.getCommentsCount(olid)
+      commentsRepository.getCommentsList(olid, limit, offset),
+      commentsRepository.getCommentsCount(olid)
     ]);
 
     return { comments: commentsList, total_results: totalCount, limit };
   },
 
  async addComment(bookOlid: string, text: string, userId: number) {
-    const newComment = await booksRepository.createComment(bookOlid, text);
+    const newComment = await commentsRepository.createComment(bookOlid, text);
     if (!newComment) {
       throw new ApiError(500, 'Не удалось сохранить комментарий в базе данных');
     }
-    await booksRepository.createUserCommentRelation(userId, newComment.id);
-    const fullComment = await booksRepository.getCommentWithAuthor(newComment.id);
+    await commentsRepository.createUserCommentRelation(userId, newComment.id);
+    const fullComment = await commentsRepository.getCommentWithAuthor(newComment.id);
     if (!fullComment) {
       throw new ApiError(500, 'Ошибка при сборке данных комментария');
     }
@@ -82,31 +83,31 @@ export const booksService = {
   },
 
   async editComment(commentId: number, text: string, userId: number) {
-    const relation = await booksRepository.getCommentRelation(commentId);
+    const relation = await commentsRepository.getCommentRelation(commentId);
     if (!relation) throw new ApiError(404, 'Комментарий не найден');
     if (relation.userId !== userId) throw new ApiError(403, 'Доступ запрещен: вы не являетесь автором этого комментария');
 
-    return booksRepository.updateCommentText(commentId, text);
+    return commentsRepository.updateCommentText(commentId, text);
   },
 
   async removeComment(commentId: number, userId: number) {
-    const relation = await booksRepository.getCommentRelation(commentId);
+    const relation = await commentsRepository.getCommentRelation(commentId);
     if (!relation) throw new ApiError(404, 'Комментарий не найден');
     if (relation.userId !== userId) throw new ApiError(403, 'Доступ запрещен: вы не являетесь автором этого комментария');
 
-    await booksRepository.deleteComment(commentId);
+    await commentsRepository.deleteComment(commentId);
   },
 
   async toggleLike(olid: string, userId: number) {
-    const isLiked = await booksRepository.checkIsLiked(olid, userId);
+    const isLiked = await likesRepository.checkIsLiked(olid, userId);
     
     if (isLiked) {
-      await booksRepository.removeLike(olid, userId);
+      await likesRepository.removeLike(olid, userId);
     } else {
-      await booksRepository.addLike(olid, userId);
+      await likesRepository.addLike(olid, userId);
     }
 
-    const newLikesCount = await booksRepository.getLikesCount(olid);
+    const newLikesCount = await likesRepository.getLikesCount(olid);
 
     wsService.broadcastLikesUpdate(olid, newLikesCount);
 
