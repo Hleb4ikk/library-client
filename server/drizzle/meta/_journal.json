@@ -8,6 +8,13 @@
       "when": 1781794390362,
       "tag": "0000_regular_gorilla_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781794390363,
+      "tag": "0001_add_comments_updated_at",
+      "breakpoints": true
     }
   ]
 }

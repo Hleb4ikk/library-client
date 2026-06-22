@@ -87,7 +87,13 @@ export const booksService = {
     if (!relation) throw new ApiError(404, 'Комментарий не найден');
     if (relation.userId !== userId) throw new ApiError(403, 'Доступ запрещен: вы не являетесь автором этого комментария');
 
-    return commentsRepository.updateCommentText(commentId, text);
+    const updated = await commentsRepository.updateCommentText(commentId, text);
+    if (!updated) throw new ApiError(500, 'Не удалось обновить комментарий');
+
+    const fullComment = await commentsRepository.getCommentWithAuthor(commentId);
+    if (!fullComment) throw new ApiError(500, 'Ошибка при сборке данных комментария');
+
+    return fullComment;
   },
 
   async removeComment(commentId: number, userId: number) {

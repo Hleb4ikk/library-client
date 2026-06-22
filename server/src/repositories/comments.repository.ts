@@ -16,6 +16,7 @@ export const commentsRepository = {
         id: comments.id,
         text: comments.text,
         createdAt: comments.createdAt,
+        updatedAt: comments.updatedAt,
         user: {
           id: users.id,
           username: users.username
@@ -45,6 +46,7 @@ export const commentsRepository = {
         id: comments.id,
         text: comments.text,
         createdAt: comments.createdAt,
+        updatedAt: comments.updatedAt,
         user: {
           id: users.id,
           username: users.username
@@ -63,7 +65,11 @@ export const commentsRepository = {
   },
 
   async updateCommentText(commentId: number, text: string) {
-    const [updated] = await db.update(comments).set({ text }).where(eq(comments.id, commentId)).returning();
+    const [updated] = await db
+      .update(comments)
+      .set({ text, updatedAt: new Date() })
+      .where(eq(comments.id, commentId))
+      .returning();
     return updated;
   },
 

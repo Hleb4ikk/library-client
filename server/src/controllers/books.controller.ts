@@ -27,7 +27,7 @@ export async function search(req: Request, res: Response) {
 export async function getDetails(req: Request, res: Response) {
   try {
     const olid = String(req.params.olid);
-    const currentUserId = (req as any).user?.id ? Number((req as any).user.id) : null;
+    const currentUserId = req.userId ?? null;
 
     const details = await booksService.getBookDetails(olid, currentUserId);
     
@@ -68,7 +68,7 @@ export async function createComment(req: Request, res: Response) {
   try {
     const olid = String(req.params.olid);
     const text = String(req.body.text);
-    const currentUserId = Number((req as any).user.id);
+    const currentUserId = req.userId!;
 
     const comment = await booksService.addComment(olid, text, currentUserId);
     
@@ -89,7 +89,7 @@ export async function updateComment(req: Request, res: Response) {
   try {
     const id = Number(req.params.id);
     const text = String(req.body.text);
-    const currentUserId = Number((req as any).user.id);
+    const currentUserId = req.userId!;
 
     const updated = await booksService.editComment(id, text, currentUserId);
     
@@ -109,7 +109,7 @@ export async function updateComment(req: Request, res: Response) {
 export async function deleteComment(req: Request, res: Response) {
   try {
     const id = Number(req.params.id);
-    const currentUserId = Number((req as any).user.id);
+    const currentUserId = req.userId!;
 
     await booksService.removeComment(id, currentUserId);
     
@@ -125,7 +125,7 @@ export async function deleteComment(req: Request, res: Response) {
 export async function toggleBookLike(req: Request, res: Response) {
   try {
     const OlsonId = String(req.params.olid);
-    const currentUserId = Number((req as any).user.id); 
+    const currentUserId = req.userId!; 
 
     const result = await booksService.toggleLike(OlsonId, currentUserId);
 

@@ -6,8 +6,6 @@ import {
   getDetails, 
   getComments, 
   createComment, 
-  updateComment, 
-  deleteComment,
   toggleBookLike 
 } from "../controllers/books.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
@@ -16,8 +14,7 @@ import {
   searchBooksQuerySchema,
   bookOlidParamSchema,
   getCommentsQuerySchema,
-  commentBodySchema,
-  commentIdParamSchema
+  commentBodySchema
 } from "../schemas/books.schema.js";
 
 const booksRouter = Router();
@@ -48,21 +45,6 @@ booksRouter.post(
   validationMiddleware(bookOlidParamSchema, "params"), 
   validationMiddleware(commentBodySchema, "body"), 
   createComment
-);
-
-booksRouter.put(
-  "/comments/:id", 
-  authMiddleware, 
-  validationMiddleware(commentIdParamSchema, "params"), 
-  validationMiddleware(commentBodySchema, "body"), 
-  updateComment
-);
-
-booksRouter.delete(
-  "/comments/:id", 
-  authMiddleware, 
-  validationMiddleware(commentIdParamSchema, "params"), 
-  deleteComment
 );
 
 booksRouter.post(
