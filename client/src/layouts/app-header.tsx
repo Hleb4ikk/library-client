@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-import { Button, Logo } from "../components/shared"; 
+import { Button, Logo } from "../components/shared";
 import { useUser } from "../features/auth/user-provider";
 
 const cabinetLinks = [
-    { label: "Профиль", icon: "♙" },
+    { label: "Профиль", icon: "♙", path: "/profile" },
     { label: "Мои лайки", icon: "♡" },
     { label: "Список чтения", icon: "☷" },
     { label: "Комментарии", icon: "▱" },
@@ -25,9 +26,10 @@ function getInitials(username: string) {
 }
 
 export default function AppHeader() {
-    const { user, isLoading } = useUser();
+    const { user, isLoading, setUser } = useUser();
     const [isCabinetOpen, setIsCabinetOpen] = useState(false);
     const cabinetRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -46,17 +48,32 @@ export default function AppHeader() {
     const username = user?.username ?? "Пользователь";
     const initials = getInitials(username);
 
+    function handleCabinetLinkClick(path?: string) {
+        setIsCabinetOpen(false);
+
+        if (path) {
+            navigate(path);
+        }
+    }
+
+    function handleLogout() {
+        setUser(null);
+        setIsCabinetOpen(false);
+        navigate("/");
+    }
+
     return (
         <header className="sticky top-0 z-50 border-b border-fern-dark/40 bg-fern/95 shadow-page backdrop-blur">
             <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <a href="#top" className="transition hover:opacity-85">
+                <Link to="/" className="transition hover:opacity-85">
                     <Logo />
-                </a>
+                </Link>
 
                 <nav className="flex items-center gap-2 sm:gap-4">
                     <Button
                         variant="ghost"
                         className="hidden bg-natural/15 px-4 py-2 text-apricot hover:bg-natural/25 sm:flex"
+                        onClick={() => navigate("/")}
                     >
                         ⌕ Поиск
                     </Button>
@@ -84,6 +101,9 @@ export default function AppHeader() {
                                             <button
                                                 key={link.label}
                                                 type="button"
+                                                onClick={() =>
+                                                    handleCabinetLinkClick(link.path)
+                                                }
                                                 className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-fern transition hover:bg-natural/15"
                                             >
                                                 <span className="w-4 text-apricot">
@@ -98,6 +118,7 @@ export default function AppHeader() {
 
                             <button
                                 type="button"
+                                onClick={() => navigate("/profile")}
                                 className="hidden items-center gap-2 rounded-xl border border-natural/30 bg-natural/15 px-3 py-2 text-sm font-semibold text-ivory transition hover:bg-natural/25 md:flex"
                             >
                                 <span className="rounded-full bg-apricot px-2 py-1 text-xs text-ivory">
@@ -110,12 +131,15 @@ export default function AppHeader() {
                                 variant="ghost"
                                 className="px-3 py-2 text-natural hover:bg-natural/15 hover:text-apricot"
                                 aria-label="Выйти"
+                                onClick={handleLogout}
                             >
                                 ↪
                             </Button>
                         </>
                     ) : (
-                        <Button className="px-5 py-2">Войти</Button>
+                        <Button className="px-5 py-2" onClick={() => navigate("/profile")}>
+                            Войти
+                        </Button>
                     )}
                 </nav>
             </div>
