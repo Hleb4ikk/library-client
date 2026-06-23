@@ -7,3 +7,4 @@ export { default as BookCard } from "./bookcard";
 export { default as Badge } from "./badge";
 export { default as Pagination } from "./pagination";
 export { default as IconButton } from "./iconbutton";
+export { default as Logo } from "./logo";

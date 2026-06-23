@@ -1,8 +1,16 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import BookDetailsPage from "./pages/book-details-page";
+import HomePage from "./pages/home-page";
+
 function App() {
   return (
-    <div>
-      <h1 className="font-bold text-6xl">Hello everyone!</h1>{" "}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/books/:bookId" element={<BookDetailsPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
