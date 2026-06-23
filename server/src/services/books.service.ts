@@ -3,6 +3,7 @@ import { likesRepository } from "@/repositories/likes.repository.js";
 import { commentsRepository } from "@/repositories/comments.repository.js";
 import ApiError from "@/classes/ApiError.js";
 import { wsService } from "./ws.service.js";
+import { rateLimited } from "@/utils/rate-limiter.utils.js";
 const OPEN_LIBRARY_URL = 'https://openlibrary.org';
 
 export const booksService = {
@@ -13,9 +14,9 @@ export const booksService = {
     if (filters.title) searchParams.append('title', filters.title);
     if (filters.author) searchParams.append('author', filters.author);
 
-    const response = await axios.get(`${OPEN_LIBRARY_URL}/search.json`, { 
-      params: Object.fromEntries(searchParams) 
-    });
+    const response = await rateLimited(() =>
+      axios.get(`${OPEN_LIBRARY_URL}/search.json`, { params: Object.fromEntries(searchParams) })
+    );
 
     const docs = response.data.docs || [];
     const formattedBooks = docs.map((book: any) => ({
@@ -31,7 +32,7 @@ export const booksService = {
 
   async getBookDetails(olid: string, currentUserId: number | null) {
     const [apiResponse, likesCount, commentsCount] = await Promise.all([
-      axios.get(`${OPEN_LIBRARY_URL}/works/${olid}.json`).catch(() => null),
+      rateLimited(() => axios.get(`${OPEN_LIBRARY_URL}/works/${olid}.json`)).catch(() => null),
       likesRepository.getLikesCount(olid),
       commentsRepository.getCommentsCount(olid)
     ]);
