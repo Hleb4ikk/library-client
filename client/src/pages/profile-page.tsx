@@ -189,7 +189,7 @@ export default function ProfilePage() {
                 </h1>
 
                 <div className="mt-7 grid gap-6 lg:grid-cols-[280px_1fr]">
-                    <ProfileSidebar />
+                    <ProfileSidebar activeItem="profile"/>
 
                     <section className="rounded-3xl border border-natural/20 bg-ivory-card p-5 shadow-page sm:p-7">
                         <h2 className="text-2xl font-bold text-fern">Профиль</h2>
