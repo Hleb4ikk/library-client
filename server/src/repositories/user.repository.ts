@@ -22,3 +22,7 @@ export async function updateUserUsername(id: number, username: string): Promise<
     const [user] = await db.update(users).set({username: username}).where(eq(users.id, id)).returning({id: users.id, username: users.username, createdAt: users.createdAt});
     return user;
 }
+
+export async function updateUserPassword(id: number, passwordHash: string): Promise<void> {
+    await db.update(users).set({passwordHash: passwordHash}).where(eq(users.id, id));
+}

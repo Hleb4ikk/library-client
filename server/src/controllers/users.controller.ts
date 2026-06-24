@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getUser, updateUsername } from "@/services/users.service.js";
+import { getUser, updatePassword, updateUsername } from "@/services/users.service.js";
 import ApiError from "@/classes/ApiError.js";
 
 export async function getProfile(req: Request, res: Response) {
@@ -36,5 +36,24 @@ export async function changeLogin(req: Request, res: Response) {
             throw error;
         }
         throw new ApiError(500, 'Ошибка при изменении логина');
+    }
+}
+
+export async function changePassword(req: Request, res: Response) {
+    try {
+        const userId = req.userId!;
+        const currentPassword = req.body.current_password;
+        const newPassword = req.body.new_password;
+        await updatePassword(userId, currentPassword, newPassword);
+        return res.status(200).json({
+            success: true,
+            message: 'Пароль успешно изменён',
+        });
+    }
+    catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, 'Ошибка при изменении пароля');
     }
 }
