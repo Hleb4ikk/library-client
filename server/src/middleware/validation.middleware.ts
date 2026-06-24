@@ -12,7 +12,13 @@ export function validationMiddleware<T extends ZodType>(
   return (req: Request, _res: Response, next: NextFunction): void => {
     try {
       const validatedData = schema.parse(req[source]);
-      req[source] = validatedData;
+
+      if (source === "query") {
+        Object.assign(req.query, validatedData);
+      } else {
+        req[source] = validatedData;
+      }
+      
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
