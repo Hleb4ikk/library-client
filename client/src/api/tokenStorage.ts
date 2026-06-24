@@ -1,4 +1,4 @@
-const TOKEN_KEY = 'accessToken';
+const TOKEN_KEY = "token";
 
 export const tokenStorage = {
   get: (): string | null => {
@@ -14,6 +14,6 @@ export const tokenStorage = {
   },
 
   exists: (): boolean => {
-    return !!localStorage.getItem(TOKEN_KEY);
+    return Boolean(localStorage.getItem(TOKEN_KEY));
   },
 };
