@@ -1,6 +1,31 @@
 import type { Request, Response } from 'express';
 import { readingListService } from '@/services/reading-list.service.js';
 import ApiError from "@/classes/ApiError.js";
+import type { ReadingListStatus } from '@/database/schemas/readingList.js';
+
+export async function getReadingListItems(req: Request, res: Response) {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 4;
+    const userId = req.userId!;
+    const status = req.query.status as ReadingListStatus ?? null;
+
+    const result = await readingListService.getItems(userId, status, page, limit);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Список чтения успешно получен',
+      data: result
+    });
+  }
+  catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        console.log(error);
+        throw new ApiError(500, 'Ошибка при получении списка чтения');
+    }
+}
 
 export async function upsertReadingListItem(req: Request, res: Response) {
   try {
