@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
-import { MOCK_CURRENT_USER } from "./mock-user";
+import { tokenStorage } from "../../api/tokenStorage";
 import type { User } from "./user";
 
 type UserContextType = {
@@ -23,6 +23,8 @@ type UserProviderProps = {
     children: ReactNode;
 };
 
+const USER_STORAGE_KEY = "user";
+
 const UserContext = createContext<UserContextType | null>(null);
 
 export function useUser() {
@@ -35,6 +37,29 @@ export function useUser() {
     return context;
 }
 
+function getStoredUser(): User | null {
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+
+    if (!storedUser) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(storedUser) as User;
+    } catch {
+        localStorage.removeItem(USER_STORAGE_KEY);
+        return null;
+    }
+}
+
+export function saveUser(user: User) {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+}
+
+export function removeUser() {
+    localStorage.removeItem(USER_STORAGE_KEY);
+}
+
 export default function UserProvider({ children }: UserProviderProps) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -45,9 +70,16 @@ export default function UserProvider({ children }: UserProviderProps) {
         setError(null);
 
         try {
-            const user = MOCK_CURRENT_USER;
+            const token = tokenStorage.get();
+            const storedUser = getStoredUser();
 
-            setUser(user);
+            if (token && storedUser) {
+                setUser(storedUser);
+            } else {
+                tokenStorage.remove();
+                removeUser();
+                setUser(null);
+            }
         } catch {
             setUser(null);
             setError("Не удалось загрузить пользователя");
@@ -68,7 +100,7 @@ export default function UserProvider({ children }: UserProviderProps) {
             fetchUser,
             setUser,
         }),
-        [user, isLoading, error, fetchUser]
+        [user, isLoading, error, fetchUser],
     );
 
     return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
