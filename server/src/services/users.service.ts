@@ -1,6 +1,8 @@
 import ApiError from "@/classes/ApiError.js";
+import { likesRepository } from "@/repositories/likes.repository.js";
 import { findUserById, findUserByUsername, updateUserPassword, updateUserUsername } from "@/repositories/user.repository.js";
 import { comparePassword, hashPassword } from "@/utils/password.utils.js";
+import { booksService } from "./books.service.js";
 
 export async function getUser(userId: number): Promise<{id: number, username: string, createdAt: Date}> {
     const user = await findUserById(userId);
@@ -53,4 +55,45 @@ export async function updatePassword(userId: number, currentPassword: string, ne
     const newPasswordHash = await hashPassword(newPassword);
 
     await updateUserPassword(userId, newPasswordHash);
+}
+
+export async function getUserLikes(userId: number, page: number, limit: number) {
+    const likes = await likesRepository.findLikesByUser(userId, page, limit);
+    const total = await likesRepository.countLikesByUser(userId);
+
+    if (total === 0) {
+      return {
+        likes: [],
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      }
+    }
+
+    const likesWithDetails = await Promise.all(
+          likes.map(async (like) => {
+            const bookDetails = await booksService.getBookDetails(like.bookOlid, userId);
+    
+            return {
+              id: like.id,
+              book_olid: like.bookOlid,
+              created_at: like.createdAt,
+              title: bookDetails.title,
+              cover: bookDetails.cover_url,
+            }
+          })
+        );
+    
+        return {
+          likes: likesWithDetails,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          },
+        };
 }
