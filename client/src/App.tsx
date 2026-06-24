@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import BookDetailsPage from "./pages/book-details-page";
@@ -16,6 +17,12 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
+=======
+import AuthPage from "./pages/AuthPage";
+
+function App() {
+    return <AuthPage />;
+>>>>>>> 0e4e3e78588c932f709166b29fa3b4bd7e32b7ef
 }
 
 export default App;
