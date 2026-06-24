@@ -28,5 +28,26 @@ export const likesRepository = {
         eq(likes.userId, userId)
       )
     );
+  },
+
+  async findLikesByUser(userId: number, page: number, limit: number) {
+    const offset = (page - 1) * limit;
+    const result = await db
+      .select()
+      .from(likes)
+      .where(eq(likes.userId, userId))
+      .offset(offset)
+      .limit(limit);
+
+    return result;
+  },
+
+  async countLikesByUser(userId: number) {
+    const result = await db
+      .select()
+      .from(likes)
+      .where(eq(likes.userId, userId));
+
+    return Number(result?.length || 0);
   }
 };
