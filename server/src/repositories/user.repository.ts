@@ -17,3 +17,8 @@ export async function findUserByUsername(username: string): Promise<User | undef
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
 }
+
+export async function updateUserUsername(id: number, username: string): Promise<{id: number, username: string, createdAt: Date} | undefined> {
+    const [user] = await db.update(users).set({username: username}).where(eq(users.id, id)).returning({id: users.id, username: users.username, createdAt: users.createdAt});
+    return user;
+}
