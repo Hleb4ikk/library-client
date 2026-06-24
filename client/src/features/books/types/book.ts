@@ -1,11 +1,11 @@
-export type BookStatus = "Хочу прочитать" | "Читаю сейчас" | "Прочитано";
+import type { EStatusBadgeVariant } from "../../../enums/EStatusBadgeVariant";
 
 export type Book = {
-    id: string;
-    title: string;
-    author: string;
-    cover?: string;
-    status?: BookStatus;
-    likes: number;
-    isLiked?: boolean;
+  id: string;
+  title: string;
+  author: string;
+  cover?: string;
+  status?: EStatusBadgeVariant;
+  likes: number;
+  isLiked?: boolean;
 };
