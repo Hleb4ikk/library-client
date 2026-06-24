@@ -1,3 +1,5 @@
+import type { BookStatus } from "./book";
+
 export type BookComment = {
     id: string;
     bookId: string;
@@ -17,5 +19,6 @@ export type BookDetails = {
     description: string;
     likes: number;
     isLiked?: boolean;
+    readingStatus?: BookStatus;
     comments: BookComment[];
 };
