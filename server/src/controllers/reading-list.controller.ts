@@ -22,7 +22,6 @@ export async function getReadingListItems(req: Request, res: Response) {
         if (error instanceof ApiError) {
             throw error;
         }
-        console.log(error);
         throw new ApiError(500, 'Ошибка при получении списка чтения');
     }
 }
