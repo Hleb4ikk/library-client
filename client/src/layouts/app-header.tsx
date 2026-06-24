@@ -7,7 +7,7 @@ import { useUser } from "../features/auth/user-provider";
 const cabinetLinks = [
     { label: "Профиль", icon: "♙", path: "/profile" },
     { label: "Мои лайки", icon: "♡" },
-    { label: "Список чтения", icon: "☷" },
+    { label: "Список чтения", icon: "☷", path: "/reading-list" },
     { label: "Комментарии", icon: "▱" },
     { label: "Поиск по моим", icon: "⌕" },
 ];
