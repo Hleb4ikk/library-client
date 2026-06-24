@@ -6,7 +6,7 @@ import HomePage from "./pages/home-page";
 import ProfilePage from "./pages/profile-page";
 import ReadingListPage from "./pages/reading-list-page";
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
@@ -19,5 +19,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;
