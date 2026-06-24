@@ -1,11 +1,17 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Badge, Button, Logo } from "../components/shared";
+import { Badge, Button, Logo, Pagination } from "../components/shared";
 import { useUser } from "../features/auth/user-provider";
+import {
+    getBooks,
+    getCachedBooks,
+    isRequestAborted,
+    validateSearchQuery,
+} from "../features/books/api/books.api";
 import BookGrid from "../features/books/components/book-grid";
 import BookSearchForm from "../features/books/components/book-search-form";
-import { popularBooks } from "../features/books/data/popular-books";
+import type { Book } from "../features/books/types/book";
 import AppHeader from "../layouts/app-header";
 
 function formatStatValue(value: number) {
@@ -24,40 +30,121 @@ export default function HomePage() {
     const { user } = useUser();
     const isAuthorized = Boolean(user);
 
+    const [books, setBooks] = useState<Book[]>([]);
+    const [totalBooks, setTotalBooks] = useState(0);
+    const [catalogTotalBooks, setCatalogTotalBooks] = useState<number | null>(
+        null,
+    );
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [isBooksLoading, setIsBooksLoading] = useState(true);
+    const [booksError, setBooksError] = useState<string | null>(null);
+
     const [searchValue, setSearchValue] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    const [reloadKey, setReloadKey] = useState(0);
+
     const navigate = useNavigate();
 
-    const visibleBooks = useMemo(() => {
-        const normalizedQuery = searchQuery.trim().toLowerCase();
+    useEffect(() => {
+        const abortController = new AbortController();
+        let isActualRequest = true;
 
-        if (!normalizedQuery) {
-            return popularBooks;
+        async function loadBooks() {
+            const validationError = validateSearchQuery(searchQuery);
+
+            if (validationError) {
+                setBooks([]);
+                setTotalBooks(0);
+                setTotalPages(1);
+                setBooksError(validationError);
+                setIsBooksLoading(false);
+                return;
+            }
+
+            const cachedBooks = getCachedBooks(searchQuery, currentPage);
+
+            if (cachedBooks) {
+                setBooks(cachedBooks.items);
+                setTotalBooks(cachedBooks.total);
+                setTotalPages(cachedBooks.totalPages);
+                if (!searchQuery) {
+                    setCatalogTotalBooks((prev) => prev ?? cachedBooks.total);
+                }
+                setIsBooksLoading(false);
+            } else {
+                setIsBooksLoading(true);
+                setBooks([]);
+            }
+
+            setBooksError(null);
+
+            try {
+                const result = await getBooks({
+                    query: searchQuery,
+                    page: currentPage,
+                    signal: abortController.signal,
+                });
+
+                if (!isActualRequest) {
+                    return;
+                }
+
+                setBooks(result.items);
+                setTotalBooks(result.total);
+                setTotalPages(result.totalPages);
+                setBooksError(null);
+
+                if (!searchQuery) {
+                    setCatalogTotalBooks((prev) => prev ?? result.total);
+                }
+            } catch (error) {
+                if (!isActualRequest || isRequestAborted(error)) {
+                    return;
+                }
+
+                const message =
+                    error instanceof Error ? error.message : "Ошибка поиска книг";
+
+                setBooksError(message);
+            } finally {
+                if (isActualRequest) {
+                    setIsBooksLoading(false);
+                }
+            }
         }
 
-        return popularBooks.filter((book) => {
-            const searchableText = `${book.title} ${book.author}`.toLowerCase();
+        void loadBooks();
 
-            return searchableText.includes(normalizedQuery);
-        });
-    }, [searchQuery]);
+        return () => {
+            isActualRequest = false;
+            abortController.abort();
+        };
+    }, [searchQuery, currentPage, reloadKey]);
 
     const totalLikes = useMemo(() => {
-        return popularBooks.reduce((sum, book) => sum + book.likes, 0);
-    }, []);
+        return books.reduce((sum, book) => sum + book.likes, 0);
+    }, [books]);
+
+    const booksCountLabel = useMemo(() => {
+        if (totalBooks === 0) {
+            return "0 книг";
+        }
+
+        if (searchQuery && totalBooks > books.length) {
+            return `${books.length} из ${formatStatValue(totalBooks)}`;
+        }
+
+        return `${books.length} книг`;
+    }, [books.length, searchQuery, totalBooks]);
 
     const stats = [
         {
-            value: formatStatValue(popularBooks.length),
+            value:
+                catalogTotalBooks !== null
+                    ? formatStatValue(catalogTotalBooks)
+                    : "—",
             label: "Книг в базе",
-        },
-        {
-            value: "1",
-            label: "Пользователей",
-        },
-        {
-            value: "0",
-            label: "Комментариев",
         },
         {
             value: formatStatValue(totalLikes),
@@ -65,13 +152,41 @@ export default function HomePage() {
         },
     ];
 
+    function handleRetrySearch() {
+        setBooksError(null);
+        setReloadKey((key) => key + 1);
+    }
+
     function handleSearchSubmit() {
-        setSearchQuery(searchValue.trim());
+        const trimmedSearchValue = searchValue.trim();
+        const validationError = validateSearchQuery(trimmedSearchValue);
+
+        if (validationError) {
+            setBooksError(validationError);
+            setBooks([]);
+            setTotalBooks(0);
+            setTotalPages(1);
+            setIsBooksLoading(false);
+            return;
+        }
+
+        setBooksError(null);
+        setCurrentPage(1);
+        setSearchQuery(trimmedSearchValue);
     }
 
     function handleResetSearch() {
         setSearchValue("");
         setSearchQuery("");
+        setCurrentPage(1);
+    }
+
+    function handlePageChange(page: number) {
+        setCurrentPage(page);
+        document.getElementById("books-section")?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
     }
 
     return (
@@ -111,7 +226,10 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+                <section
+                    id="books-section"
+                    className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14"
+                >
                     <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-3">
                             <h2 className="text-xl font-bold text-fern sm:text-2xl">
@@ -120,7 +238,7 @@ export default function HomePage() {
                                     : "Популярные книги"}
                             </h2>
 
-                            <Badge>{visibleBooks.length} книг</Badge>
+                            <Badge>{booksCountLabel}</Badge>
                         </div>
 
                         {searchQuery && (
@@ -134,13 +252,55 @@ export default function HomePage() {
                         )}
                     </div>
 
-                    {visibleBooks.length > 0 ? (
-                        <BookGrid
-                            books={visibleBooks}
-                            isAuthorized={isAuthorized}
-                            onOpenBook={(book) => navigate(`/books/${book.id}`)}
-                            onLikeBook={(book) => console.log("like book", book.id)}
-                        />
+                    {isBooksLoading && books.length === 0 ? (
+                        <div className="rounded-2xl border border-natural/25 bg-ivory-card px-6 py-12 text-center shadow-card">
+                            <p className="text-lg font-bold text-fern">
+                                Загружаем книги...
+                            </p>
+                        </div>
+                    ) : booksError && books.length === 0 ? (
+                        <div className="rounded-2xl border border-error/25 bg-error/10 px-6 py-12 text-center shadow-card">
+                            <p className="text-lg font-bold text-error">
+                                {booksError}
+                            </p>
+                            <Button
+                                variant="outline"
+                                className="mt-4"
+                                onClick={handleRetrySearch}
+                            >
+                                Повторить
+                            </Button>
+                        </div>
+                    ) : books.length > 0 ? (
+                        <>
+                            {booksError && (
+                                <div className="mb-4 rounded-xl border border-error/25 bg-error/10 px-4 py-3 text-sm text-error">
+                                    {booksError}
+                                </div>
+                            )}
+
+                            {isBooksLoading && (
+                                <p className="mb-4 text-sm text-natural-text">
+                                    Обновляем результаты...
+                                </p>
+                            )}
+
+                            <BookGrid
+                                books={books}
+                                isAuthorized={isAuthorized}
+                                onOpenBook={(book) => navigate(`/books/${book.id}`)}
+                                onLikeBook={(book) =>
+                                    console.log("like book", book.id)
+                                }
+                            />
+
+                            <Pagination
+                                className="mt-10"
+                                page={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                            />
+                        </>
                     ) : (
                         <div className="rounded-2xl border border-natural/25 bg-ivory-card px-6 py-12 text-center shadow-card">
                             <p className="text-lg font-bold text-fern">
