@@ -151,7 +151,6 @@ export default function ProfilePage() {
                 : {
                     id: mockUserProfile.id,
                     username: trimmedUsername,
-                    email: mockUserProfile.email,
                     registeredAt: mockUserProfile.registeredAt,
                 }
         );

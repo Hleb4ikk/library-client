@@ -1,4 +1,3 @@
-import { MOCK_USER } from "../../auth/mock-user";
 import type { UserProfileMock } from "../types/profile";
 
 export const MOCK_PROFILE_PASSWORD = "password123";
@@ -12,10 +11,9 @@ export const mockTakenUsernames = [
 ];
 
 export const mockUserProfile: UserProfileMock = {
-    id: MOCK_USER.id,
-    username: MOCK_USER.username,
-    email: MOCK_USER.email,
-    registeredAt: MOCK_USER.registeredAt ?? "2024-03-12",
+    id: 1,
+    username: "reader_user",
+    registeredAt: "2024-03-12",
     stats: {
         likes: 3,
         readingList: 4,

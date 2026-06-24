@@ -5,9 +5,8 @@ export type ProfileStats = {
 };
 
 export type UserProfileMock = {
-    id: string;
-    username: string;
-    email?: string;
+    id: number;
+    username: string
     registeredAt: string;
     stats: ProfileStats;
 };
