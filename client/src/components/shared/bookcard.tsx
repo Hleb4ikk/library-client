@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from "react";
+import { useEffect, useState, type HTMLAttributes } from "react";
 import { twMerge } from "tailwind-merge";
 import Badge from "./badge";
 import Button from "./button";
@@ -27,6 +27,13 @@ export default function BookCard({
     className,
     ...props
 }: BookCardProps) {
+    const [coverFailed, setCoverFailed] = useState(false);
+    const showCover = Boolean(cover) && !coverFailed;
+
+    useEffect(() => {
+        setCoverFailed(false);
+    }, [cover]);
+
     return (
         <div
             className={twMerge(
@@ -40,10 +47,14 @@ export default function BookCard({
                 onClick={onOpen}
                 className="h-64 w-full cursor-pointer overflow-hidden bg-ivory-muted"
             >
-                {cover ? (
+                {showCover ? (
                     <img
                         src={cover}
                         alt={title}
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                        onError={() => setCoverFailed(true)}
                         className="h-full w-full object-cover"
                     />
                 ) : (

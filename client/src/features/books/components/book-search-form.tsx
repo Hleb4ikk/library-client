@@ -31,7 +31,7 @@ export default function BookSearchForm({
                 <Input
                     value={value}
                     onChange={(event) => onChange(event.target.value)}
-                    placeholder="Название или автор..."
+                    placeholder="Минимум 3 символа: название или автор..."
                     className="h-14 border-natural/40 bg-ivory-card/15 pl-11 text-ivory placeholder:text-natural focus:border-apricot"
                 />
             </div>
