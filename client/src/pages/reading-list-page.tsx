@@ -19,19 +19,19 @@ const BOOKS_PER_PAGE = 4;
 const statusFilters: Array<{ label: string; value: StatusFilter }> = [
     { label: "Все", value: "all" },
     { label: "Хочу прочитать", value: "Хочу прочитать" },
-    { label: "Читаю сейчас", value: "Читаю" },
+    { label: "Читаю сейчас", value: "Читаю сейчас" },
     { label: "Прочитано", value: "Прочитано" },
 ];
 
 const statusOptions: BookStatus[] = [
     "Хочу прочитать",
-    "Читаю",
+    "Читаю сейчас",
     "Прочитано",
 ];
 
 const statusBadgeVariant: Record<BookStatus, "want" | "reading" | "done"> = {
     "Хочу прочитать": "want",
-    Читаю: "reading",
+    "Читаю сейчас": "reading",
     Прочитано: "done",
 };
 
