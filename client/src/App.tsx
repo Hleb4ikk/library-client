@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> de19232e8d9071f1532dd0bff73a8114de683bcf
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import AuthPage from "./pages/AuthPage";
@@ -10,7 +6,7 @@ import HomePage from "./pages/home-page";
 import ProfilePage from "./pages/profile-page";
 import ReadingListPage from "./pages/reading-list-page";
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
@@ -22,15 +18,4 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
-<<<<<<< HEAD
-=======
-import AuthPage from "./pages/AuthPage";
-
-function App() {
-    return <AuthPage />;
->>>>>>> 0e4e3e78588c932f709166b29fa3b4bd7e32b7ef
-=======
->>>>>>> de19232e8d9071f1532dd0bff73a8114de683bcf
 }
-
-export default App;

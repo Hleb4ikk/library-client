@@ -11,27 +11,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.4.0",
+    "@hookform/resolvers": "5.4.0",
     "@tailwindcss/vite": "4.3.0",
-    "axios": "^1.18.1",
+    "axios": "1.18.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "react-router-dom": "^7.18.0",
-    "tailwind-merge": "^3.6.0",
-    "tailwindcss": "4.3.0"
-=======
-    "react-hook-form": "^7.79.0",
-    "tailwind-merge": "^3.6.0",
+    "react-router-dom": "7.18.0",
+    "tailwind-merge": "3.6.0",
     "tailwindcss": "4.3.0",
-    "zod": "^4.4.3"
->>>>>>> 0e4e3e78588c932f709166b29fa3b4bd7e32b7ef
-=======
-    "react-router-dom": "^7.18.0",
-    "tailwind-merge": "^3.6.0",
-    "tailwindcss": "4.3.0"
->>>>>>> de19232e8d9071f1532dd0bff73a8114de683bcf
+    "react-hook-form": "7.79.0",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
