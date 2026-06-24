@@ -1,4 +1,4 @@
-export type BookStatus = "Хочу прочитать" | "Читаю" | "Прочитано";
+export type BookStatus = "Хочу прочитать" | "Читаю сейчас" | "Прочитано";
 
 export type Book = {
     id: string;
