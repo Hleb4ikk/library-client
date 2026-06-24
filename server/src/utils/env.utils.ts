@@ -7,6 +7,7 @@ const REQUIRED_ENV_VARIABLES = [
   'ACCESS_TOKEN_SECRET',
   'ACCESS_TOKEN_EXPIRES_IN',
   'BCRYPT_SALT_ROUNDS',
+  'DATABASE_URL'
 ] as const;
 
 export function assertRequiredEnvVariables(): void {

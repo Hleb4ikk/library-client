@@ -23,7 +23,7 @@ function parseAccessTokenPayload(payload: unknown): AccessTokenPayload | null {
   return result.success ? result.data : null;
 }
 
-export function generateAccessToken(userId: string): string {
+export function generateAccessToken(userId: number): string {
   return jwt.sign({ userId }, appConfig.jwt.secret!, accessTokenSignOptions);
 }
 

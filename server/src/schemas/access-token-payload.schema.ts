@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const accessTokenPayloadSchema = z.object({
-  userId: z.uuid(),
+  userId: z.number(),
 });
 
 export type AccessTokenPayload = z.infer<typeof accessTokenPayloadSchema>;
