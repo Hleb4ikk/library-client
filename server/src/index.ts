@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { appConfig } from "@/appConfig.js";
 import { errorHandler } from "./middleware/error.handler.js";
 import apiRouter from "./routes/index.js";
@@ -7,6 +8,14 @@ import { wsService } from './services/ws.service.js';
 
 const app = express();
 const httpServer = createServer(app);
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL ?? "http://localhost:5173",
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.use(express.json());
 

@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button, Logo } from "../components/shared";
-import { useUser } from "../features/auth/user-provider";
-
+import { tokenStorage } from "../api/tokenStorage";
+import { removeUser, useUser } from "../features/auth/user-provider";
 const cabinetLinks = [
     { label: "Профиль", icon: "♙", path: "/profile" },
     { label: "Мои лайки", icon: "♡" },
@@ -57,11 +57,12 @@ export default function AppHeader() {
     }
 
     function handleLogout() {
+        tokenStorage.remove();
+        removeUser();
         setUser(null);
         setIsCabinetOpen(false);
         navigate("/");
     }
-
     return (
         <header className="sticky top-0 z-50 border-b border-fern-dark/40 bg-fern/95 shadow-page backdrop-blur">
             <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -137,7 +138,7 @@ export default function AppHeader() {
                             </Button>
                         </>
                     ) : (
-                        <Button className="px-5 py-2" onClick={() => navigate("/profile")}>
+                        <Button className="px-5 py-2" onClick={() => navigate("/auth")}>
                             Войти
                         </Button>
                     )}

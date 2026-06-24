@@ -1,13 +1,14 @@
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
 import {
     loginSchema,
     registerSchema,
     type LoginFormData,
     type RegisterFormData,
 } from "../schemas/auth.schema";
-import Input from "./shared/input";
 import Button from "./shared/button";
+import Input from "./shared/input";
 import Label from "./shared/label";
 
 type FormType = "login" | "register";
@@ -36,27 +37,14 @@ export default function AuthForm({
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {!isLogin && (
-                <div>
-                    <Label htmlFor="name">Имя</Label>
-                    <Input
-                        id="name"
-                        type="text"
-                        placeholder="Введите ваше имя"
-                        error={(errors as any).name?.message}
-                        {...register("name")}
-                    />
-                </div>
-            )}
-
             <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Логин</Label>
                 <Input
-                    id="email"
-                    type="email"
-                    placeholder="example@email.com"
-                    error={errors.email?.message}
-                    {...register("email")}
+                    id="username"
+                    type="text"
+                    placeholder="Введите логин"
+                    error={errors.username?.message}
+                    {...register("username")}
                 />
             </div>
 
@@ -78,7 +66,13 @@ export default function AuthForm({
                         id="confirmPassword"
                         type="password"
                         placeholder="Повторите пароль"
-                        error={(errors as any).confirmPassword?.message}
+                        error={
+                            (
+                                errors as Partial<
+                                    Record<"confirmPassword", { message?: string }>
+                                >
+                            ).confirmPassword?.message
+                        }
                         {...register("confirmPassword")}
                     />
                 </div>
@@ -90,11 +84,7 @@ export default function AuthForm({
                 className="w-full"
                 disabled={isLoading}
             >
-                {isLoading
-                    ? "Загрузка..."
-                    : isLogin
-                      ? "Войти"
-                      : "Зарегистрироваться"}
+                {isLoading ? "Загрузка..." : isLogin ? "Войти" : "Зарегистрироваться"}
             </Button>
         </form>
     );

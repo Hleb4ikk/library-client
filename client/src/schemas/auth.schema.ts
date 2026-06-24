@@ -1,38 +1,29 @@
 import { z } from "zod";
 
-// Схема для логина
+const passwordSchema = z
+    .string()
+    .min(1, "Пароль обязателен")
+    .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+        "Пароль должен содержать минимум 6 символов, большую и маленькую букву, цифру и спецсимвол",
+    );
+
 export const loginSchema = z.object({
-    
-    name: z
+    username: z
         .string()
-        .min(2, "Имя обязательно"),
-    email: z
-        .string()
-        .min(1, "Email обязателен")
-        .email("Некорректный email адрес"),
-    password: z
-        .string()
-        .min(1, "Пароль обязателен")
-        .min(6, "Пароль должен содержать минимум 6 символов"),
+        .min(1, "Логин обязателен")
+        .min(3, "Логин должен содержать минимум 3 символа"),
+    password: passwordSchema,
 });
 
-// Схема для регистрации
 export const registerSchema = z
     .object({
-        name: z
+        username: z
             .string()
-            .min(1, "Имя обязательно")
-            .min(2, "Имя должно содержать минимум 2 символа")
-            .max(50, "Имя не может превышать 50 символов"),
-        email: z
-            .string()
-            .min(1, "Email обязателен")
-            .email("Некорректный email адрес"),
-        password: z
-            .string()
-            .min(1, "Пароль обязателен")
-            .min(6, "Пароль должен содержать минимум 6 символов")
-            .max(100, "Пароль не может превышать 100 символов"),
+            .min(1, "Логин обязателен")
+            .min(3, "Логин должен содержать минимум 3 символа")
+            .max(50, "Логин не может превышать 50 символов"),
+        password: passwordSchema,
         confirmPassword: z.string().min(1, "Подтверждение пароля обязательно"),
     })
     .refine((data) => data.password === data.confirmPassword, {
@@ -40,6 +31,5 @@ export const registerSchema = z
         path: ["confirmPassword"],
     });
 
-// Типы форм, выведенные из схем
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
