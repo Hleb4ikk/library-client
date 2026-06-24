@@ -6,7 +6,6 @@ import { Badge, Button, Pagination } from "../components/shared";
 import {
     deleteReadingListBook,
     getReadingListBooks,
-    resetMockReadingListBooks,
     updateReadingListBookStatus,
 } from "../features/books/api/reading-list.api";
 import type { Book, BookStatus } from "../features/books/types/book";
@@ -211,13 +210,7 @@ export default function ReadingListPage() {
         await loadReadingListBooks(nextPage, activeFilter);
     }
 
-    async function handleResetList() {
-        await resetMockReadingListBooks();
-
-        setActiveFilter("all");
-        setCurrentPage(1);
-        await loadReadingListBooks(1, "all");
-    }
+   
 
     return (
         <div className="min-h-screen bg-ivory text-fern">
