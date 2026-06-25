@@ -257,3 +257,51 @@ export async function getBooks({
 }
 
 export { isRequestAborted };
+
+// API для получения деталей книги
+type BookDetailsResponse = {
+    olid: string;
+    title: string;
+    description: string;
+    covers: number[];
+    cover_url: string | null;
+    likes_count: number;
+    comments_count: number;
+    is_liked: boolean;
+};
+
+export async function getBookDetails(
+    olid: string
+): Promise<ApiSuccessResponse<BookDetailsResponse>> {
+    try {
+        const response = await axiosInstance.get<
+            ApiSuccessResponse<BookDetailsResponse>
+        >(`/books/${olid}`);
+
+        return response.data;
+    } catch (error) {
+        const message = getApiErrorMessage(error);
+        throw new Error(message ?? "Ошибка получения деталей книги");
+    }
+}
+
+// API для переключения лайка
+type ToggleLikeResponse = {
+    is_liked: boolean;
+    likes_count: number;
+};
+
+export async function toggleBookLike(
+    olid: string
+): Promise<ApiSuccessResponse<ToggleLikeResponse>> {
+    try {
+        const response = await axiosInstance.post<
+            ApiSuccessResponse<ToggleLikeResponse>
+        >(`/books/${olid}/like`);
+
+        return response.data;
+    } catch (error) {
+        const message = getApiErrorMessage(error);
+        throw new Error(message ?? "Ошибка при изменении лайка");
+    }
+}
