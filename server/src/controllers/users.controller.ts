@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getUser, getUserLikes, updatePassword, updateUsername } from "@/services/users.service.js";
+import { getUser, getUserComments, getUserLikes, updatePassword, updateUsername } from "@/services/users.service.js";
 import ApiError from "@/classes/ApiError.js";
 
 export async function getProfile(req: Request, res: Response) {
@@ -65,6 +65,28 @@ export async function getLikes(req: Request, res: Response) {
         const userId = req.userId!;
 
         const result = await getUserLikes(userId, page, limit);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Список лайков успешно получен',
+            data: result
+        });
+    }
+    catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, 'Ошибка при изменении пароля');
+    }
+}
+
+export async function getComments(req: Request, res: Response) {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 4;
+        const userId = req.userId!;
+
+        const result = await getUserComments(userId, page, limit);
 
         return res.status(200).json({
             success: true,
