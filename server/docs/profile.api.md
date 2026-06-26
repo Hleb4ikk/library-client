@@ -381,7 +381,7 @@ Middleware `authMiddleware` подключён на уровне роутера,
 ```json
 {
   "success": false,
-  "message": "Ошибка при изменении пароля"
+  "message": "Ошибка при получении списка лайков"
 }
 ```
 
@@ -484,6 +484,6 @@ Middleware `authMiddleware` подключён на уровне роутера,
 ```json
 {
   "success": false,
-  "message": "Ошибка при изменении пароля"
+  "message": "Ошибка при получении списка комментариев"
 }
 ```
