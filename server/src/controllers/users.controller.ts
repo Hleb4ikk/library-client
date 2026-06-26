@@ -79,7 +79,7 @@ export async function getLikes(req: Request, res: Response) {
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError(500, "Ошибка при изменении пароля");
+    throw new ApiError(500, "Ошибка при получении списка лайков");
   }
 }
 
@@ -120,13 +120,13 @@ export async function getComments(req: Request, res: Response) {
 
     return res.status(200).json({
       success: true,
-      message: "Список лайков успешно получен",
+      message: "Список комментариев успешно получен",
       data: result,
     });
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError(500, "Ошибка при изменении пароля");
+    throw new ApiError(500, "Ошибка при получении списка комментариев");
   }
 }
