@@ -1,6 +1,5 @@
 
 import { Router } from "express";
-// Импортируем отдельные функции контроллера напрямую
 import { 
   search, 
   getDetails, 
@@ -38,7 +37,6 @@ booksRouter.get(
   getComments
 );
 
-// Защищенные роуты
 booksRouter.post(
   "/:olid/comments", 
   authMiddleware, 
