@@ -1,6 +1,6 @@
 import { db } from "../database/db.js";
 import { likes } from "../database/schemas/likes.js";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 
 export const likesRepository = {
   async getLikesCount(olid: string) {
@@ -49,5 +49,22 @@ export const likesRepository = {
       .where(eq(likes.userId, userId));
 
     return Number(result?.length || 0);
-  }
+  },
+
+  async getLikesCountsForOlids(olids: string[]) {
+    if (olids.length === 0) return new Map<string, number>();
+
+    const results = await db
+      .select({
+        bookOlid: likes.bookOlid,
+        count: sql<number>`count(*)`,
+      })
+      .from(likes)
+      .where(inArray(likes.bookOlid, olids))
+      .groupBy(likes.bookOlid);
+
+    return new Map(
+      results.map((row) => [row.bookOlid, Number(row.count || 0)]),
+    );
+  },
 };

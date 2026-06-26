@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { getUser, getUserLikes, updatePassword, updateUsername } from "@/services/users.service.js";
+import { searchUserBooks } from "@/services/me-books.service.js";
 import ApiError from "@/classes/ApiError.js";
 
 export async function getProfile(req: Request, res: Response) {
@@ -77,5 +78,33 @@ export async function getLikes(req: Request, res: Response) {
             throw error;
         }
         throw new ApiError(500, 'Ошибка при изменении пароля');
+    }
+}
+
+export async function searchMyBooks(req: Request, res: Response) {
+    try {
+        const userId = req.userId!;
+        const q = req.query.q as string | undefined;
+        const type = (req.query.type as "likes" | "reading_list" | "all") ?? "all";
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+
+        const result = await searchUserBooks(userId, {
+            type,
+            page,
+            limit,
+            ...(q ? { q } : {}),
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Книги успешно найдены",
+            data: result,
+        });
+    } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
+        throw new ApiError(500, "Ошибка при поиске книг");
     }
 }

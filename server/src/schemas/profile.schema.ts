@@ -20,4 +20,19 @@ export const getLikesQuerySchema = z.object({
         .optional()
         .transform((val) => (val ? parseInt(val, 10) : 3))
         .refine((val) => !isNaN(val) && val > 0, { message: "Лимит должен быть положительным числом" }),
-})
+});
+
+export const searchMyBooksQuerySchema = z.object({
+    q: z.string().optional(),
+    type: z.enum(["likes", "reading_list", "all"]).default("all"),
+    page: z
+        .string()
+        .optional()
+        .transform((val) => (val ? parseInt(val, 10) : 1))
+        .refine((val) => !isNaN(val) && val > 0, { message: "Номер страницы должен быть положительным числом" }),
+    limit: z
+        .string()
+        .optional()
+        .transform((val) => (val ? parseInt(val, 10) : 10))
+        .refine((val) => !isNaN(val) && val > 0, { message: "Лимит должен быть положительным числом" }),
+});
