@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "../components/shared";
+import { EStatusBadgeVariant } from "../enums/EStatusBadgeVariant";
 import { useUser } from "../features/auth/user-provider";
 import { getBookDetails, toggleBookLike } from "../features/books/api/books.api";
+import { addOrUpdateBookStatus } from "../features/books/api/reading-list.api";
 import BookCommentsSection from "../features/books/components/book-comments-section";
 import BookDetailsCard from "../features/books/components/book-details-card";
 import { getMockBookDetailsById } from "../features/books/data/book-details.mock";
@@ -27,9 +29,9 @@ export default function BookDetailsPage() {
     const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isLikeLoading, setIsLikeLoading] = useState(false);
+    const [isStatusLoading, setIsStatusLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Загрузка деталей книги из API (fallback механизм)
     useEffect(() => {
         if (!bookId) return;
 
@@ -41,26 +43,19 @@ export default function BookDetailsPage() {
                 const response = await getBookDetails(bookId);
                 const details = response.data;
 
-                // Преобразуем данные из API в формат BookDetails
                 setBook({
                     id: details.olid,
                     title: details.title,
-                    author: "Автор неизвестен", // TODO: получить автора из API
-                    year: 2024, // TODO: получить год из API
+                    author: "Автор неизвестен",
+                    year: 2024,
                     cover: details.cover_url || undefined,
                     description: details.description,
                     likes: details.likes_count,
                     isLiked: details.is_liked,
-                    comments: [], // Комментарии загружаются отдельно
+                    comments: [],
                 });
-
-                console.log(
-                    `[BookDetailsPage] Данные книги загружены из API: ${details.likes_count} лайков`
-                );
             } catch (err) {
-                console.error("[BookDetailsPage] Ошибка загрузки книги:", err);
                 setError(err instanceof Error ? err.message : "Ошибка загрузки книги");
-                // Fallback на mock данные
                 setBook(getMockBookDetailsById(bookId));
             } finally {
                 setIsLoading(false);
@@ -70,36 +65,23 @@ export default function BookDetailsPage() {
         loadBookDetails();
     }, [bookId]);
 
-    // WebSocket подключение и обработка событий
     useEffect(() => {
         if (!bookId) return;
 
-        console.log(`[BookDetailsPage] Инициализация WebSocket для книги: ${bookId}`);
-
-        // Подключение к WebSocket серверу
         socketService.connect();
 
-        // Регистрация обработчиков событий
         socketService.on({
             onConnect: () => {
-                console.log("[BookDetailsPage] WebSocket подключен");
                 setIsWebSocketConnected(true);
-                // Присоединяемся к комнате после успешного подключения
                 socketService.joinBookRoom(bookId);
             },
             onDisconnect: () => {
-                console.log("[BookDetailsPage] WebSocket отключен");
                 setIsWebSocketConnected(false);
             },
-            onError: (error) => {
-                console.error("[BookDetailsPage] WebSocket ошибка:", error.message);
+            onError: () => {
                 setIsWebSocketConnected(false);
             },
             onLikesUpdated: (payload) => {
-                console.log(
-                    `[BookDetailsPage] Получено обновление лайков для ${payload.book_olid}: ${payload.count}`
-                );
-                // Обновляем только если это наша книга
                 if (payload.book_olid === bookId) {
                     setBook((currentBook) => ({
                         ...currentBook,
@@ -109,18 +91,13 @@ export default function BookDetailsPage() {
             },
         });
 
-        // Если уже подключен, присоединяемся к комнате сразу
         if (socketService.isConnected()) {
             socketService.joinBookRoom(bookId);
             setIsWebSocketConnected(true);
         }
 
-        // Cleanup при размонтировании или смене книги
         return () => {
-            console.log(`[BookDetailsPage] Cleanup для книги: ${bookId}`);
             socketService.leaveBookRoom(bookId);
-            // Не отключаем сокет полностью, только покидаем комнату
-            // socketService.disconnect();
         };
     }, [bookId]);
 
@@ -129,14 +106,11 @@ export default function BookDetailsPage() {
     }
 
     async function handleLike() {
-        if (!isAuthorized || !bookId || isLikeLoading) {
-            return;
-        }
+        if (!isAuthorized || !bookId || isLikeLoading) return;
 
         setIsLikeLoading(true);
 
         try {
-            // Оптимистичное обновление UI
             setBook((currentBook) => ({
                 ...currentBook,
                 isLiked: !currentBook.isLiked,
@@ -145,26 +119,15 @@ export default function BookDetailsPage() {
                     : currentBook.likes + 1,
             }));
 
-            // Отправляем запрос на сервер
             const response = await toggleBookLike(bookId);
             const { is_liked, likes_count } = response.data;
 
-            console.log(
-                `[BookDetailsPage] Лайк переключен: ${is_liked}, новое количество: ${likes_count}`
-            );
-
-            // Обновляем с данными сервера (на случай расхождения)
             setBook((currentBook) => ({
                 ...currentBook,
                 isLiked: is_liked,
                 likes: likes_count,
             }));
-
-            // WebSocket broadcast будет отправлен сервером автоматически
         } catch (err) {
-            console.error("[BookDetailsPage] Ошибка при лайке:", err);
-
-            // Откатываем оптимистичное обновление в случае ошибки
             setBook((currentBook) => ({
                 ...currentBook,
                 isLiked: !currentBook.isLiked,
@@ -184,6 +147,32 @@ export default function BookDetailsPage() {
         }));
     }
 
+    async function handleStatusChange(status: EStatusBadgeVariant) {
+        if (!isAuthorized || !bookId || isStatusLoading) return;
+
+        setIsStatusLoading(true);
+
+        try {
+            setBook((currentBook) => ({
+                ...currentBook,
+                readingStatus: status,
+            }));
+
+            await addOrUpdateBookStatus(bookId, status);
+        } catch (err) {
+            setBook((currentBook) => ({
+                ...currentBook,
+                readingStatus: undefined,
+            }));
+
+            setError(
+                err instanceof Error ? err.message : "Ошибка при изменении статуса"
+            );
+        } finally {
+            setIsStatusLoading(false);
+        }
+    }
+
     return (
         <div className="min-h-screen bg-ivory text-fern">
             <AppHeader />
@@ -198,7 +187,7 @@ export default function BookDetailsPage() {
                         ← На главную
                     </Button>
 
-                    {/* WebSocket статус индикатор (для разработки) */}
+                    {/* WebSocket indicator */}
                     <div className="flex items-center gap-2 rounded-lg bg-natural/10 px-3 py-1.5 text-xs">
                         <span
                             className={`h-2 w-2 rounded-full ${
@@ -206,7 +195,7 @@ export default function BookDetailsPage() {
                             }`}
                         />
                         <span className="text-natural-text">
-                            {isWebSocketConnected ? "WS подключен" : "WS отключен"}
+                            {isWebSocketConnected ? "WS" : "Offline"}
                         </span>
                     </div>
                 </div>
@@ -230,6 +219,8 @@ export default function BookDetailsPage() {
                             book={book}
                             isAuthorized={isAuthorized}
                             onLike={handleLike}
+                            onStatusChange={handleStatusChange}
+                            isStatusLoading={isStatusLoading}
                         />
 
                         <BookCommentsSection

@@ -1,7 +1,22 @@
+import axiosInstance from "../../../api/axios";
 import type { EStatusBadgeVariant } from "../../../enums/EStatusBadgeVariant";
 import type { StatusFilter } from "../../../types/StatusFilter";
 import { mockReadingListBooks } from "../data/reading-list.mock";
 import type { Book } from "../types/book";
+
+type ApiSuccessResponse<T> = {
+    success: true;
+    message: string;
+    data: T;
+};
+
+type ReadingListItem = {
+    id: number;
+    book_olid: string;
+    status: string;
+    created_at: string;
+    updated_at: string | null;
+};
 
 export type GetReadingListBooksParams = {
   page: number;
@@ -92,6 +107,20 @@ export async function deleteReadingListBook(bookId: string): Promise<void> {
 
 export async function resetMockReadingListBooks(): Promise<void> {
   await delay(250);
-
   readingListBooks = [...mockReadingListBooks];
+}
+
+export async function addOrUpdateBookStatus(
+    bookOlid: string,
+    status: EStatusBadgeVariant
+): Promise<ApiSuccessResponse<ReadingListItem>> {
+    const response = await axiosInstance.post<ApiSuccessResponse<ReadingListItem>>(
+        "/reading-list",
+        { book_olid: bookOlid, status: status }
+    );
+    return response.data;
+}
+
+export async function removeBookFromReadingList(itemId: number): Promise<void> {
+    await axiosInstance.delete(`/reading-list/${itemId}`);
 }
