@@ -26,6 +26,19 @@ services:
       - library-redis
     restart: unless-stopped
 
+  email-worker:
+    build:
+      context: ./email-worker
+    container_name: library-email-worker
+    env_file:
+      - ./email-worker/.env
+    environment:
+      # Внутри сети compose обращаемся к redis по имени сервиса
+      REDIS_URL: redis://default:my_secure_password@library-redis:6379
+    depends_on:
+      - library-redis
+    restart: unless-stopped
+
   client:
     build:
       context: ./client
