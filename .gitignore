@@ -28,6 +28,11 @@
 /server/dist
 /server/node_modules
 
+# email-worker
+/email-worker/.env
+/email-worker/dist
+/email-worker/node_modules
+
 #shared
 /node_modules
 

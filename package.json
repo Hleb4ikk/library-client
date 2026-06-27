@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "lint-staged": {
-    "{client,server}/src/**/*.{ts,tsx,js,jsx,json,css,md}": [
+    "{client,server,email-worker}/src/**/*.{ts,tsx,js,jsx,json,css,md}": [
       "prettier --write",
       "eslint --fix"
     ]

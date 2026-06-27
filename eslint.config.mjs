@@ -1,5 +1,6 @@
 import serverConfig from "./server/eslint.config.mjs";
 import clientConfig from "./client/eslint.config.mjs";
+import emailWorkerConfig from "./email-worker/eslint.config.mjs";
 
 export default [
   {
@@ -13,5 +14,10 @@ export default [
   ...serverConfig.map((config) => ({
     ...config,
     files: ["server/src/**/*.{ts,js}"],
+  })),
+
+  ...emailWorkerConfig.map((config) => ({
+    ...config,
+    files: ["email-worker/src/**/*.{ts,js}"],
   })),
 ];
