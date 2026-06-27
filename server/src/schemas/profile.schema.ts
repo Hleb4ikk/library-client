@@ -9,7 +9,7 @@ export const changePasswordBodySchema = z.object({
     new_password: z.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/)
 });
 
-export const getLikesQuerySchema = z.object({
+export const paginationQuerySchema = z.object({
     page: z
         .string()
         .optional()
@@ -20,4 +20,4 @@ export const getLikesQuerySchema = z.object({
         .optional()
         .transform((val) => (val ? parseInt(val, 10) : 3))
         .refine((val) => !isNaN(val) && val > 0, { message: "Лимит должен быть положительным числом" }),
-})
+});

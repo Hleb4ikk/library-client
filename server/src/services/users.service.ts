@@ -3,6 +3,7 @@ import { likesRepository } from "@/repositories/likes.repository.js";
 import { findUserById, findUserByUsername, updateUserPassword, updateUserUsername } from "@/repositories/user.repository.js";
 import { comparePassword, hashPassword } from "@/utils/password.utils.js";
 import { booksService } from "./books.service.js";
+import { commentsRepository } from "@/repositories/comments.repository.js";
 
 export async function getUser(userId: number): Promise<{id: number, username: string, createdAt: Date}> {
     const user = await findUserById(userId);
@@ -74,9 +75,9 @@ export async function getUserLikes(userId: number, page: number, limit: number) 
     }
 
     const likesWithDetails = await Promise.all(
-          likes.map(async (like) => {
+        likes.map(async (like) => {
             const bookDetails = await booksService.getBookDetails(like.bookOlid, userId);
-    
+            
             return {
               id: like.id,
               book_olid: like.bookOlid,
@@ -84,16 +85,60 @@ export async function getUserLikes(userId: number, page: number, limit: number) 
               title: bookDetails.title,
               cover: bookDetails.cover_url,
             }
-          })
-        );
+        })
+    );
     
-        return {
-          likes: likesWithDetails,
-          pagination: {
+    return {
+        likes: likesWithDetails,
+        pagination: {
             page,
             limit,
             total,
             totalPages: Math.ceil(total / limit),
-          },
-        };
+        },
+    };
+}
+
+export async function getUserComments(userId: number, page: number, limit: number) {
+    const offset = (page - 1) * limit;
+    const comments = await commentsRepository.findCommentsByUserId(userId, offset, limit);
+    const total = await commentsRepository.countCommentsByUserId(userId);
+
+    if (total === 0) {
+      return {
+        comments: [],
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      }
+    }
+
+    const commentsWithDetails = await Promise.all(
+        comments.map(async (comment) => {
+            const bookDetails = await booksService.getBookDetails(comment.bookOlid, userId);
+            
+            return {
+              id: comment.id,
+              text: comment.text,
+              book_olid: comment.bookOlid,
+              book_title: bookDetails.title,
+              book_cover: bookDetails.cover_url,
+              created_at: comment.createdAt,
+              updated_at: comment.updatedAt,
+            }
+        })
+    );
+    
+    return {
+        comments: commentsWithDetails,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
 }
