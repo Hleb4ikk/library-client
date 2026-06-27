@@ -1,6 +1,5 @@
 
 import { Router } from "express";
-// Импортируем отдельные функции контроллера напрямую
 import { 
   search, 
   getDetails, 
