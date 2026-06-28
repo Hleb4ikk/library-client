@@ -37,7 +37,6 @@ booksRouter.get(
   getComments
 );
 
-// Защищенные роуты
 booksRouter.post(
   "/:olid/comments", 
   authMiddleware, 
