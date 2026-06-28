@@ -79,6 +79,7 @@ export async function getLikes(req: Request, res: Response) {
     if (error instanceof ApiError) {
       throw error;
     }
+
     throw new ApiError(500, "Ошибка при получении списка лайков");
   }
 }
