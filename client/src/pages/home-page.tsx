@@ -10,7 +10,9 @@ import {
   validateSearchQuery,
 } from "../features/books/api/books.api";
 import BookGrid from "../features/books/components/book-grid";
-import BookSearchForm from "../features/books/components/book-search-form";
+import BookSearchForm, {
+  type SearchType,
+} from "../features/books/components/book-search-form";
 import type { Book } from "../features/books/types/book";
 import AppHeader from "../layouts/app-header";
 
@@ -27,6 +29,7 @@ export default function HomePage() {
 
   const [searchValue, setSearchValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState<SearchType>("all");
   const [reloadKey, setReloadKey] = useState(0);
 
   const navigate = useNavigate();
@@ -46,7 +49,7 @@ export default function HomePage() {
         return;
       }
 
-      const cachedBooks = getCachedBooks(searchQuery, currentPage);
+      const cachedBooks = getCachedBooks(searchQuery, currentPage, searchType);
 
       if (cachedBooks) {
         setBooks(cachedBooks.items);
@@ -65,6 +68,7 @@ export default function HomePage() {
           query: searchQuery,
           page: currentPage,
           signal: abortController.signal,
+          searchType,
         });
 
         if (!isActualRequest) {
@@ -96,7 +100,7 @@ export default function HomePage() {
       isActualRequest = false;
       abortController.abort();
     };
-  }, [searchQuery, currentPage, reloadKey]);
+  }, [searchQuery, currentPage, reloadKey, searchType]);
 
   function handleRetrySearch() {
     setBooksError(null);
@@ -123,6 +127,7 @@ export default function HomePage() {
   function handleResetSearch() {
     setSearchValue("");
     setSearchQuery("");
+    setSearchType("all");
     setCurrentPage(1);
   }
 
@@ -152,6 +157,8 @@ export default function HomePage() {
               value={searchValue}
               onChange={setSearchValue}
               onSubmit={handleSearchSubmit}
+              searchType={searchType}
+              onSearchTypeChange={setSearchType}
             />
           </div>
         </section>
