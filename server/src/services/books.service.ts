@@ -73,30 +73,32 @@ export const booksService = {
       };
     }
 
+    let metadata: BookMetadata;
     try {
-      const metadata = await this.fetchBookMetadataFromOpenLibrary(olid);
-      const saved = await booksCacheRepository.upsert(metadata);
-      if (!saved) {
-        throw new ApiError(500, "Не удалось сохранить данные книги в кеш");
-      }
-      return metadata;
+      metadata = await this.fetchBookMetadataFromOpenLibrary(olid);
     } catch (error) {
-      if (error instanceof ApiError && error.status === 404) {
-        const fallback: BookMetadata = {
-          olid,
-          title: olid,
-          author: "Неизвестный автор",
-          cover_url: null,
-        };
-        const saved = await booksCacheRepository.upsert(fallback);
-        if (!saved) {
-          throw new ApiError(500, "Не удалось сохранить данные книги в кеш");
-        }
-        return fallback;
-      }
-
-      throw error;
+      console.error(
+        `[books] Не удалось получить метаданные книги ${olid} из Open Library:`,
+        error,
+      );
+      metadata = {
+        olid,
+        title: olid,
+        author: "Неизвестный автор",
+        cover_url: null,
+      };
     }
+
+    try {
+      await booksCacheRepository.upsert(metadata);
+    } catch (error) {
+      console.error(
+        `[books] Не удалось сохранить метаданные книги ${olid} в кеш:`,
+        error,
+      );
+    }
+
+    return metadata;
   },
 
   async ensureBooksCached(olids: string[]) {

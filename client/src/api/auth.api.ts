@@ -20,7 +20,12 @@ type ApiErrorResponse = {
     description?: unknown;
 };
 
-export type RegisterResponse = ApiSuccessResponse<AuthUser>;
+export type RegisterResponse = ApiSuccessResponse<{ email: string }>;
+
+export type VerifyEmailResponse = ApiSuccessResponse<{
+    user: AuthUser;
+    token: string;
+}>;
 
 export type LoginResponse = ApiSuccessResponse<{
     user: AuthUser;
@@ -60,6 +65,30 @@ export const registerUser = async (
         );
 
         return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error));
+    }
+};
+
+export const verifyEmail = async (
+    email: string,
+    code: number,
+): Promise<VerifyEmailResponse> => {
+    try {
+        const response = await axiosInstance.post<VerifyEmailResponse>(
+            "/auth/verify-email",
+            { email, code },
+        );
+
+        return response.data;
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error));
+    }
+};
+
+export const resendVerificationCode = async (email: string): Promise<void> => {
+    try {
+        await axiosInstance.post("/auth/resend-verification", { email });
     } catch (error) {
         throw new Error(getApiErrorMessage(error));
     }

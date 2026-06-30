@@ -23,6 +23,10 @@ export const registerSchema = z
             .min(1, "Логин обязателен")
             .min(3, "Логин должен содержать минимум 3 символа")
             .max(50, "Логин не может превышать 50 символов"),
+        email: z
+            .string()
+            .min(1, "Email обязателен")
+            .email("Введите корректный email"),
         password: passwordSchema,
         confirmPassword: z.string().min(1, "Подтверждение пароля обязательно"),
     })
@@ -31,5 +35,13 @@ export const registerSchema = z
         path: ["confirmPassword"],
     });
 
+export const verifyCodeSchema = z.object({
+    code: z
+        .string()
+        .min(1, "Код обязателен")
+        .regex(/^\d{6}$/, "Код состоит из 6 цифр"),
+});
+
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
+export type VerifyCodeFormData = z.infer<typeof verifyCodeSchema>;

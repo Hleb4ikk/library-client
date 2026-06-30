@@ -4,8 +4,8 @@ import { twMerge } from "tailwind-merge";
 
 import { Badge, Button, Pagination } from "../components/shared";
 import {
-  deleteReadingListBook,
   getReadingListBooks,
+  removeBookFromReadingList,
   updateReadingListBookStatus,
 } from "../features/books/api/reading-list.api";
 import type { Book } from "../features/books/types/book";
@@ -42,7 +42,7 @@ function ReadingListBookItem({
   book: Book;
   onOpen: (book: Book) => void;
   onStatusChange: (bookId: string, status: EStatusBadgeVariant) => void;
-  onDelete: (bookId: string) => void;
+  onDelete: (book: Book) => void;
 }) {
   const status = book.status ?? EStatusBadgeVariant.WANT;
 
@@ -108,7 +108,7 @@ function ReadingListBookItem({
 
           <Button
             variant="danger"
-            onClick={() => onDelete(book.id)}
+            onClick={() => onDelete(book)}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl px-0 py-0"
             aria-label={`Удалить книгу ${book.title} из списка`}
           >
@@ -192,8 +192,10 @@ export default function ReadingListPage() {
     await loadReadingListBooks(currentPage, activeFilter);
   }
 
-  async function handleDeleteBook(bookId: string) {
-    await deleteReadingListBook(bookId);
+  async function handleDeleteBook(book: Book) {
+    if (book.readingListItemId == null) return;
+
+    await removeBookFromReadingList(book.readingListItemId);
 
     const nextPage =
       books.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;

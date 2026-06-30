@@ -13,6 +13,7 @@ type DropdownProps = {
     onChange: (value: string) => void;
     placeholder?: string;
     className?: string;
+    triggerClassName?: string;
     disabled?: boolean;
 };
 
@@ -22,6 +23,7 @@ export default function Dropdown({
     onChange,
     placeholder = "Выберите...",
     className,
+    triggerClassName,
     disabled = false,
 }: DropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
@@ -57,7 +59,8 @@ export default function Dropdown({
                     "flex w-full items-center justify-between gap-2 rounded-xl border border-natural/20 bg-white px-4 py-3 text-left text-sm font-medium text-fern transition-all",
                     "hover:border-apricot/50 focus:border-apricot focus:outline-none focus:ring-2 focus:ring-apricot/20",
                     disabled && "cursor-not-allowed opacity-50",
-                    isOpen && "border-apricot ring-2 ring-apricot/20"
+                    isOpen && "border-apricot ring-2 ring-apricot/20",
+                    triggerClassName
                 )}
             >
                 <span className="flex items-center gap-2">

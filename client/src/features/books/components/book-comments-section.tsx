@@ -8,19 +8,15 @@ type BookCommentsSectionProps = {
     bookId: string;
     comments: BookComment[];
     isAuthorized: boolean;
-    currentUsername?: string;
+    currentUserId?: number;
     onCommentCreated: (comment: BookComment) => void;
 };
-
-function getInitials(username: string) {
-    return username.slice(0, 2).toUpperCase();
-}
 
 export default function BookCommentsSection({
     bookId,
     comments,
     isAuthorized,
-    currentUsername = "user",
+    currentUserId,
     onCommentCreated,
 }: BookCommentsSectionProps) {
     const [commentText, setCommentText] = useState("");
@@ -34,12 +30,11 @@ export default function BookCommentsSection({
         setIsCreating(true);
 
         try {
-            const createdComment = await createBookComment({
+            const createdComment = await createBookComment(
                 bookId,
-                text: trimmedText,
-                authorName: currentUsername,
-                authorInitials: getInitials(currentUsername),
-            });
+                trimmedText,
+                currentUserId,
+            );
 
             onCommentCreated(createdComment);
             setCommentText("");

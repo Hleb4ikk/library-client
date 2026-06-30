@@ -20,7 +20,21 @@
       "idx": 2,
       "version": "7",
       "when": 1781794390364,
+      "tag": "0002_reading_list",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781794390365,
       "tag": "0003_add_user_email",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1782858391178,
+      "tag": "0004_books_cache",
       "breakpoints": true
     }
   ]

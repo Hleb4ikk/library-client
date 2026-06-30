@@ -1,18 +1,28 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { loginUser, registerUser } from "../api/auth.api";
+import {
+    loginUser,
+    registerUser,
+    resendVerificationCode,
+    verifyEmail,
+} from "../api/auth.api";
 import { tokenStorage } from "../api/tokenStorage";
 import AuthForm from "../components/AuthForm";
+import VerifyCodeForm from "../components/VerifyCodeForm";
 import Tabs from "../components/shared/tabs";
 import { saveUser, useUser } from "../features/auth/user-provider";
 import type { LoginFormData, RegisterFormData } from "../schemas/auth.schema";
 
 type AuthType = "login" | "register";
+type RegisterStep = "form" | "verify";
 
 export default function AuthPage() {
     const [activeTab, setActiveTab] = useState<AuthType>("login");
+    const [registerStep, setRegisterStep] = useState<RegisterStep>("form");
+    const [pendingEmail, setPendingEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isResending, setIsResending] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const navigate = useNavigate();
@@ -23,10 +33,14 @@ export default function AuthPage() {
         { label: "Регистрация", value: "register" },
     ];
 
-    const handleSubmit = async (data: LoginFormData | RegisterFormData) => {
-        setIsLoading(true);
+    function resetMessages() {
         setError(null);
         setSuccessMessage(null);
+    }
+
+    const handleSubmit = async (data: LoginFormData | RegisterFormData) => {
+        setIsLoading(true);
+        resetMessages();
 
         try {
             if (activeTab === "login") {
@@ -42,8 +56,11 @@ export default function AuthPage() {
 
             const response = await registerUser(data as RegisterFormData);
 
-            setSuccessMessage(response.message);
-            setActiveTab("login");
+            setPendingEmail(response.data.email);
+            setRegisterStep("verify");
+            setSuccessMessage(
+                `Код подтверждения отправлен на ${response.data.email}`,
+            );
         } catch (err) {
             const errorMessage =
                 err instanceof Error ? err.message : "Произошла ошибка";
@@ -53,6 +70,57 @@ export default function AuthPage() {
         }
     };
 
+    const handleVerify = async (code: number) => {
+        setIsLoading(true);
+        resetMessages();
+
+        try {
+            const response = await verifyEmail(pendingEmail, code);
+
+            tokenStorage.set(response.data.token);
+            saveUser(response.data.user);
+            setUser(response.data.user);
+
+            navigate("/");
+        } catch (err) {
+            const errorMessage =
+                err instanceof Error ? err.message : "Произошла ошибка";
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResend = async () => {
+        setIsResending(true);
+        resetMessages();
+
+        try {
+            await resendVerificationCode(pendingEmail);
+            setSuccessMessage(`Код отправлен повторно на ${pendingEmail}`);
+        } catch (err) {
+            const errorMessage =
+                err instanceof Error ? err.message : "Произошла ошибка";
+            setError(errorMessage);
+        } finally {
+            setIsResending(false);
+        }
+    };
+
+    function handleBackToForm() {
+        setRegisterStep("form");
+        resetMessages();
+    }
+
+    function handleTabChange(value: AuthType) {
+        setActiveTab(value);
+        setRegisterStep("form");
+        setPendingEmail("");
+        resetMessages();
+    }
+
+    const isVerifying = activeTab === "register" && registerStep === "verify";
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-ivory p-4">
             <div className="w-full max-w-md space-y-6 rounded-2xl bg-white p-8 shadow-lg">
@@ -61,18 +129,16 @@ export default function AuthPage() {
                     <p className="mt-2 text-sm text-natural">
                         {activeTab === "login"
                             ? "Войдите в свой аккаунт"
-                            : "Создайте новый аккаунт"}
+                            : isVerifying
+                              ? "Подтвердите email"
+                              : "Создайте новый аккаунт"}
                     </p>
                 </div>
 
                 <Tabs
                     items={tabs}
                     activeTab={activeTab}
-                    onTabChange={(value) => {
-                        setActiveTab(value as AuthType);
-                        setError(null);
-                        setSuccessMessage(null);
-                    }}
+                    onTabChange={(value) => handleTabChange(value as AuthType)}
                 />
 
                 {error && (
@@ -83,15 +149,26 @@ export default function AuthPage() {
 
                 {successMessage && (
                     <div className="rounded-xl bg-success/10 p-3 text-sm text-fern">
-                        {successMessage}. Теперь войдите в аккаунт.
+                        {successMessage}
                     </div>
                 )}
 
-                <AuthForm
-                    type={activeTab}
-                    onSubmit={handleSubmit}
-                    isLoading={isLoading}
-                />
+                {isVerifying ? (
+                    <VerifyCodeForm
+                        email={pendingEmail}
+                        onVerify={handleVerify}
+                        onResend={handleResend}
+                        onBack={handleBackToForm}
+                        isLoading={isLoading}
+                        isResending={isResending}
+                    />
+                ) : (
+                    <AuthForm
+                        type={activeTab}
+                        onSubmit={handleSubmit}
+                        isLoading={isLoading}
+                    />
+                )}
             </div>
         </div>
     );

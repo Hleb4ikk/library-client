@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { booksService } from '@/services/books.service.js';
+import { likesRepository } from '@/repositories/likes.repository.js';
 import ApiError from "@/classes/ApiError.js";
 
 export async function search(req: Request, res: Response) {
@@ -11,10 +12,28 @@ export async function search(req: Request, res: Response) {
       author: validatedQuery.author,
       page: validatedQuery.page
     });
+
+    const olids: string[] = result.books
+      .map((book: any) => book.olid)
+      .filter((olid: any): olid is string => Boolean(olid));
+
+    const [likesCounts, likedOlids] = await Promise.all([
+      likesRepository.getLikesCountsForOlids(olids),
+      req.userId
+        ? likesRepository.getUserLikedOlids(req.userId, olids)
+        : Promise.resolve(new Set<string>()),
+    ]);
+
+    const books = result.books.map((book: any) => ({
+      ...book,
+      likes_count: book.olid ? likesCounts.get(book.olid) ?? 0 : 0,
+      is_liked: book.olid ? likedOlids.has(book.olid) : false,
+    }));
+
     return res.status(200).json({
       success: true,
       message: "Книги успешно найдены",
-      data: { ...result, page: validatedQuery.page }
+      data: { books, total_results: result.total_results, page: validatedQuery.page }
     });
   } catch (error) {
     if (error instanceof ApiError) {

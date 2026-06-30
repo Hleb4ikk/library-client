@@ -1,21 +1,35 @@
 import axiosInstance from "../../../api/axios";
 import type { EStatusBadgeVariant } from "../../../enums/EStatusBadgeVariant";
 import type { StatusFilter } from "../../../types/StatusFilter";
-import { mockReadingListBooks } from "../data/reading-list.mock";
 import type { Book } from "../types/book";
 
 type ApiSuccessResponse<T> = {
-    success: true;
-    message: string;
-    data: T;
+  success: true;
+  message: string;
+  data: T;
 };
 
 type ReadingListItem = {
-    id: number;
-    book_olid: string;
-    status: string;
-    created_at: string;
-    updated_at: string | null;
+  id: number;
+  book_olid: string;
+  status: string;
+  created_at: string;
+  updated_at: string | null;
+};
+
+type ReadingListItemWithDetails = ReadingListItem & {
+  title: string;
+  cover: string | null;
+};
+
+type ReadingListData = {
+  items: ReadingListItemWithDetails[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 };
 
 export type GetReadingListBooksParams = {
@@ -34,10 +48,16 @@ export type PaginatedBooksResponse = {
   end: number;
 };
 
-let readingListBooks: Book[] = [...mockReadingListBooks];
-
-function delay(ms = 400) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
+function mapItemToBook(item: ReadingListItemWithDetails): Book {
+  return {
+    id: item.book_olid,
+    title: item.title,
+    author: "",
+    cover: item.cover ?? undefined,
+    status: item.status as EStatusBadgeVariant,
+    likes: 0,
+    readingListItemId: item.id,
+  };
 }
 
 export async function getReadingListBooks({
@@ -45,82 +65,54 @@ export async function getReadingListBooks({
   limit,
   status = "all",
 }: GetReadingListBooksParams): Promise<PaginatedBooksResponse> {
-  await delay();
+  const params: Record<string, string | number> = { page, limit };
 
-  const filteredBooks =
-    status === "all"
-      ? readingListBooks
-      : readingListBooks.filter((book) => book.status === status);
+  if (status !== "all") {
+    params.status = status;
+  }
 
-  const total = filteredBooks.length;
-  const totalPages = Math.ceil(total / limit);
+  const response = await axiosInstance.get<ApiSuccessResponse<ReadingListData>>(
+    "/reading-list",
+    { params },
+  );
 
-  const safePage =
-    totalPages === 0 ? 1 : Math.min(Math.max(page, 1), totalPages);
+  const { items, pagination } = response.data.data;
+  const books = items.map(mapItemToBook);
 
-  const offset = (safePage - 1) * limit;
+  const total = pagination.total;
+  const offset = (pagination.page - 1) * limit;
   const start = total === 0 ? 0 : offset + 1;
   const end = Math.min(offset + limit, total);
 
-  const items = filteredBooks.slice(offset, offset + limit);
-
   return {
-    items,
+    items: books,
     total,
-    page: safePage,
+    page: pagination.page,
     limit,
-    totalPages,
+    totalPages: pagination.totalPages,
     start,
     end,
   };
 }
 
-export async function updateReadingListBookStatus(
-  bookId: string,
-  status: EStatusBadgeVariant,
-): Promise<Book> {
-  await delay(250);
-
-  const book = readingListBooks.find((item) => item.id === bookId);
-
-  if (!book) {
-    throw new Error("Книга не найдена");
-  }
-
-  const updatedBook = {
-    ...book,
-    status,
-  };
-
-  readingListBooks = readingListBooks.map((item) =>
-    item.id === bookId ? updatedBook : item,
-  );
-
-  return updatedBook;
-}
-
-export async function deleteReadingListBook(bookId: string): Promise<void> {
-  await delay(250);
-
-  readingListBooks = readingListBooks.filter((book) => book.id !== bookId);
-}
-
-export async function resetMockReadingListBooks(): Promise<void> {
-  await delay(250);
-  readingListBooks = [...mockReadingListBooks];
-}
-
 export async function addOrUpdateBookStatus(
-    bookOlid: string,
-    status: EStatusBadgeVariant
+  bookOlid: string,
+  status: EStatusBadgeVariant,
 ): Promise<ApiSuccessResponse<ReadingListItem>> {
-    const response = await axiosInstance.post<ApiSuccessResponse<ReadingListItem>>(
-        "/reading-list",
-        { book_olid: bookOlid, status: status }
-    );
-    return response.data;
+  const response = await axiosInstance.post<ApiSuccessResponse<ReadingListItem>>(
+    "/reading-list",
+    { book_olid: bookOlid, status },
+  );
+  return response.data;
+}
+
+export async function updateReadingListBookStatus(
+  bookOlid: string,
+  status: EStatusBadgeVariant,
+): Promise<void> {
+  await addOrUpdateBookStatus(bookOlid, status);
 }
 
 export async function removeBookFromReadingList(itemId: number): Promise<void> {
-    await axiosInstance.delete(`/reading-list/${itemId}`);
+  await axiosInstance.delete(`/reading-list/${itemId}`);
 }

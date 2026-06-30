@@ -91,21 +91,21 @@ export const commentsRepository = {
         }
       })
       .from(comments)
-      .leftJoin(usersToComments, eq(usersToComments.commentId, comments.id))
+      .innerJoin(usersToComments, eq(usersToComments.commentId, comments.id))
       .leftJoin(users, eq(users.id, usersToComments.userId))
+      .where(eq(usersToComments.userId, userId))
       .orderBy(desc(comments.createdAt))
       .limit(limit)
       .offset(offset);
   },
 
   async countCommentsByUserId(userId: number) {
-    const result = await db
-      .select()
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
       .from(comments)
-      .leftJoin(usersToComments, eq(usersToComments.commentId, comments.id))
-      .leftJoin(users, eq(users.id, usersToComments.userId))
-      .orderBy(desc(comments.createdAt));
+      .innerJoin(usersToComments, eq(usersToComments.commentId, comments.id))
+      .where(eq(usersToComments.userId, userId));
 
-      return Number(result?.length || 0);
+    return Number(result?.count || 0);
   }
 };

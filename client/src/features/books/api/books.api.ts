@@ -25,6 +25,8 @@ type BackendBook = {
   author: string;
   cover_edition_key: string | null;
   cover_url: string | null;
+  likes_count?: number;
+  is_liked?: boolean;
 };
 
 type BackendBooksData = {
@@ -203,7 +205,8 @@ function mapBackendBookToBook(book: BackendBook): Book | null {
     title: book.title,
     author: book.author,
     cover: buildCoverUrl(book),
-    likes: 0,
+    likes: book.likes_count ?? 0,
+    isLiked: book.is_liked ?? false,
   };
 }
 

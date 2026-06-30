@@ -1,5 +1,32 @@
-import { mockLikedBooks } from "../data/user-likes.mock";
+import axiosInstance from "../../../api/axios";
 import type { Book } from "../types/book";
+import { toggleBookLike } from "./books.api";
+
+type ApiSuccessResponse<T> = {
+    success: true;
+    message: string;
+    data: T;
+};
+
+type BackendUserBook = {
+    olid: string;
+    title: string;
+    author: string;
+    cover_url: string | null;
+    is_liked: boolean;
+    reading_list_status: string | null;
+    likes_count: number;
+};
+
+type SearchUserBooksData = {
+    books: BackendUserBook[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+};
 
 export type GetLikedBooksParams = {
     page: number;
@@ -16,47 +43,46 @@ export type PaginatedLikedBooksResponse = {
     end: number;
 };
 
-let likedBooks: Book[] = [...mockLikedBooks];
-
-function delay(ms = 400) {
-    return new Promise((resolve) => window.setTimeout(resolve, ms));
+function mapToBook(book: BackendUserBook): Book {
+    return {
+        id: book.olid,
+        title: book.title,
+        author: book.author,
+        cover: book.cover_url ?? undefined,
+        likes: book.likes_count,
+        isLiked: book.is_liked,
+    };
 }
 
 export async function getLikedBooks({
     page,
     limit,
 }: GetLikedBooksParams): Promise<PaginatedLikedBooksResponse> {
-    await delay();
+    const response = await axiosInstance.get<
+        ApiSuccessResponse<SearchUserBooksData>
+    >("/me/books/search", {
+        params: { type: "likes", page, limit },
+    });
 
-    const total = likedBooks.length;
-    const totalPages = Math.ceil(total / limit);
-    const safePage =
-        totalPages === 0 ? 1 : Math.min(Math.max(page, 1), totalPages);
+    const { books, pagination } = response.data.data;
+    const items = books.map(mapToBook);
 
-    const offset = (safePage - 1) * limit;
+    const total = pagination.total;
+    const offset = (pagination.page - 1) * limit;
     const start = total === 0 ? 0 : offset + 1;
     const end = Math.min(offset + limit, total);
-    const items = likedBooks.slice(offset, offset + limit);
 
     return {
         items,
         total,
-        page: safePage,
+        page: pagination.page,
         limit,
-        totalPages,
+        totalPages: pagination.totalPages,
         start,
         end,
     };
 }
 
 export async function removeLikedBook(bookId: string): Promise<void> {
-    await delay(250);
-
-    likedBooks = likedBooks.filter((book) => book.id !== bookId);
-}
-
-export async function resetMockLikedBooks(): Promise<void> {
-    await delay(250);
-
-    likedBooks = [...mockLikedBooks];
+    await toggleBookLike(bookId);
 }

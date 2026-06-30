@@ -5,6 +5,7 @@ import { Button } from "../components/shared";
 import { EStatusBadgeVariant } from "../enums/EStatusBadgeVariant";
 import { useUser } from "../features/auth/user-provider";
 import { getBookDetails, toggleBookLike } from "../features/books/api/books.api";
+import { getBookComments } from "../features/books/api/comments.api";
 import { addOrUpdateBookStatus } from "../features/books/api/reading-list.api";
 import BookCommentsSection from "../features/books/components/book-comments-section";
 import BookDetailsCard from "../features/books/components/book-details-card";
@@ -43,6 +44,12 @@ export default function BookDetailsPage() {
                 const response = await getBookDetails(bookId);
                 const details = response.data;
 
+                const commentsResult = await getBookComments(
+                    bookId,
+                    1,
+                    user?.id,
+                ).catch(() => ({ comments: [] }));
+
                 setBook({
                     id: details.olid,
                     title: details.title,
@@ -52,7 +59,7 @@ export default function BookDetailsPage() {
                     description: details.description,
                     likes: details.likes_count,
                     isLiked: details.is_liked,
-                    comments: [],
+                    comments: commentsResult.comments,
                 });
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Ошибка загрузки книги");
@@ -63,7 +70,7 @@ export default function BookDetailsPage() {
         };
 
         loadBookDetails();
-    }, [bookId]);
+    }, [bookId, user?.id]);
 
     useEffect(() => {
         if (!bookId) return;
@@ -227,7 +234,7 @@ export default function BookDetailsPage() {
                             bookId={book.id}
                             comments={book.comments}
                             isAuthorized={isAuthorized}
-                            currentUsername={user?.username}
+                            currentUserId={user?.id}
                             onCommentCreated={handleCommentCreated}
                         />
                     </>

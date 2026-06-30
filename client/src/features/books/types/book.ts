@@ -8,4 +8,5 @@ export type Book = {
   status?: EStatusBadgeVariant;
   likes: number;
   isLiked?: boolean;
+  readingListItemId?: number;
 };

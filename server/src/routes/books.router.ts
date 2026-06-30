@@ -7,7 +7,7 @@ import {
   createComment, 
   toggleBookLike 
 } from "../controllers/books.controller.js";
-import { authMiddleware } from "../middleware/auth.middleware.js";
+import { authMiddleware, optionalAuthMiddleware } from "../middleware/auth.middleware.js";
 import { validationMiddleware } from "../middleware/validation.middleware.js";
 import {
   searchBooksQuerySchema,
@@ -19,14 +19,16 @@ import {
 const booksRouter = Router();
 
 booksRouter.get(
-  "/", 
-  validationMiddleware(searchBooksQuerySchema, "query"), 
+  "/",
+  optionalAuthMiddleware,
+  validationMiddleware(searchBooksQuerySchema, "query"),
   search
 );
 
 booksRouter.get(
-  "/:olid", 
-  validationMiddleware(bookOlidParamSchema, "params"), 
+  "/:olid",
+  optionalAuthMiddleware,
+  validationMiddleware(bookOlidParamSchema, "params"),
   getDetails
 );
 

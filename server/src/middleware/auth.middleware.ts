@@ -29,3 +29,20 @@ export function authMiddleware(
   req.userId = payload.userId;
   next();
 }
+
+export function optionalAuthMiddleware(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
+  const token = extractBearerToken(req.headers.authorization);
+
+  if (token) {
+    const payload = verifyAccessToken(token);
+    if (payload) {
+      req.userId = payload.userId;
+    }
+  }
+
+  next();
+}

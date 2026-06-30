@@ -7,6 +7,7 @@ import {
   getBooks,
   getCachedBooks,
   isRequestAborted,
+  toggleBookLike,
   validateSearchQuery,
 } from "../features/books/api/books.api";
 import BookGrid from "../features/books/components/book-grid";
@@ -105,6 +106,23 @@ export default function HomePage() {
   function handleRetrySearch() {
     setBooksError(null);
     setReloadKey((key) => key + 1);
+  }
+
+  async function handleLikeBook(book: Book) {
+    try {
+      const response = await toggleBookLike(book.id);
+      const { is_liked, likes_count } = response.data;
+
+      setBooks((previousBooks) =>
+        previousBooks.map((item) =>
+          item.id === book.id
+            ? { ...item, isLiked: is_liked, likes: likes_count }
+            : item,
+        ),
+      );
+    } catch {
+      // Лайк не удалось переключить — оставляем карточку без изменений
+    }
   }
 
   function handleSearchSubmit() {
@@ -218,7 +236,7 @@ export default function HomePage() {
                 books={books}
                 isAuthorized={isAuthorized}
                 onOpenBook={(book) => navigate(`/books/${book.id}`)}
-                onLikeBook={(book) => console.log("like book", book.id)}
+                onLikeBook={handleLikeBook}
               />
 
               <Pagination

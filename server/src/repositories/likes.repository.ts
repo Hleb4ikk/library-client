@@ -51,6 +51,17 @@ export const likesRepository = {
     return Number(result?.length || 0);
   },
 
+  async getUserLikedOlids(userId: number, olids: string[]) {
+    if (olids.length === 0) return new Set<string>();
+
+    const rows = await db
+      .select({ bookOlid: likes.bookOlid })
+      .from(likes)
+      .where(and(eq(likes.userId, userId), inArray(likes.bookOlid, olids)));
+
+    return new Set(rows.map((row) => row.bookOlid));
+  },
+
   async getLikesCountsForOlids(olids: string[]) {
     if (olids.length === 0) return new Map<string, number>();
 

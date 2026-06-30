@@ -45,11 +45,22 @@ export default function BookSearchForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="mx-auto mt-10 flex max-w-3xl flex-col gap-3"
-    >
-      <div className="flex flex-col gap-3 sm:flex-row">
+    <form onSubmit={handleSubmit} className="mx-auto mt-10 max-w-3xl">
+      <div className="flex flex-col gap-2 rounded-2xl border border-natural/40 bg-ivory-card/15 p-1.5 sm:flex-row sm:items-stretch">
+        {onSearchTypeChange && (
+          <>
+            <Dropdown
+              options={searchTypeOptions}
+              value={searchType}
+              onChange={handleSearchTypeChange}
+              className="w-full shrink-0 sm:w-44"
+              triggerClassName="h-12 rounded-xl border-0 bg-ivory-card/15 text-ivory hover:border-0 focus:ring-0 sm:bg-transparent"
+            />
+
+            <div className="hidden w-px shrink-0 self-stretch bg-natural/30 sm:block" />
+          </>
+        )}
+
         <div className="relative flex-1">
           <span className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-natural">
             ⌕
@@ -59,26 +70,14 @@ export default function BookSearchForm({
             value={value}
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
-            className="h-14 border-natural/40 bg-ivory-card/15 pl-11 text-ivory placeholder:text-natural focus:border-apricot"
+            className="h-12 border-0 bg-ivory-card/15 pl-11 text-ivory placeholder:text-natural focus:ring-0 sm:bg-transparent"
           />
         </div>
 
-        <Button type="submit" className="h-14 px-8 sm:w-auto">
+        <Button type="submit" className="h-12 shrink-0 px-8">
           ⌕ Найти
         </Button>
       </div>
-
-      {onSearchTypeChange && (
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-natural">Искать:</span>
-          <Dropdown
-            options={searchTypeOptions}
-            value={searchType}
-            onChange={handleSearchTypeChange}
-            className="w-48"
-          />
-        </div>
-      )}
     </form>
   );
 }

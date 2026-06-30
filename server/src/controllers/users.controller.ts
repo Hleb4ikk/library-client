@@ -108,7 +108,12 @@ export async function searchMyBooks(req: Request, res: Response) {
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError(500, "Ошибка при поиске книг");
+    console.error("[searchMyBooks] Непредвиденная ошибка:", error);
+    throw new ApiError(
+      500,
+      "Ошибка при поиске книг",
+      error instanceof Error ? error.message : undefined,
+    );
   }
 }
 export async function getComments(req: Request, res: Response) {

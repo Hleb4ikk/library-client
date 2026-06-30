@@ -1,5 +1,31 @@
-import { mockUserComments } from "../data/user-comments.mock";
+import axiosInstance from "../../../api/axios";
 import type { UserComment } from "../types/user-comment";
+
+type ApiSuccessResponse<T> = {
+    success: true;
+    message: string;
+    data: T;
+};
+
+type BackendUserComment = {
+    id: number;
+    text: string;
+    book_olid: string;
+    book_title: string;
+    book_cover: string | null;
+    created_at: string;
+    updated_at: string | null;
+};
+
+type UserCommentsData = {
+    comments: BackendUserComment[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+};
 
 export type GetUserCommentsParams = {
     page: number;
@@ -16,34 +42,44 @@ export type PaginatedUserCommentsResponse = {
     end: number;
 };
 
-let userComments: UserComment[] = [...mockUserComments];
+function formatDate(value: string | null) {
+    return value ? value.slice(0, 10) : "";
+}
 
-function delay(ms = 400) {
-    return new Promise((resolve) => window.setTimeout(resolve, ms));
+function mapComment(comment: BackendUserComment): UserComment {
+    return {
+        id: String(comment.id),
+        bookId: comment.book_olid,
+        bookTitle: comment.book_title,
+        text: comment.text,
+        createdAt: formatDate(comment.created_at),
+    };
 }
 
 export async function getUserComments({
     page,
     limit,
 }: GetUserCommentsParams): Promise<PaginatedUserCommentsResponse> {
-    await delay();
+    const response = await axiosInstance.get<
+        ApiSuccessResponse<UserCommentsData>
+    >("/me/comments", {
+        params: { page, limit },
+    });
 
-    const total = userComments.length;
-    const totalPages = Math.ceil(total / limit);
-    const safePage =
-        totalPages === 0 ? 1 : Math.min(Math.max(page, 1), totalPages);
+    const { comments, pagination } = response.data.data;
+    const items = comments.map(mapComment);
 
-    const offset = (safePage - 1) * limit;
+    const total = pagination.total;
+    const offset = (pagination.page - 1) * limit;
     const start = total === 0 ? 0 : offset + 1;
     const end = Math.min(offset + limit, total);
-    const items = userComments.slice(offset, offset + limit);
 
     return {
         items,
         total,
-        page: safePage,
+        page: pagination.page,
         limit,
-        totalPages,
+        totalPages: pagination.totalPages,
         start,
         end,
     };
@@ -52,34 +88,10 @@ export async function getUserComments({
 export async function updateUserComment(
     commentId: string,
     text: string,
-): Promise<UserComment> {
-    await delay(250);
-
-    const trimmedText = text.trim();
-
-    userComments = userComments.map((comment) =>
-        comment.id === commentId ? { ...comment, text: trimmedText } : comment,
-    );
-
-    const updatedComment = userComments.find(
-        (comment) => comment.id === commentId,
-    );
-
-    if (!updatedComment) {
-        throw new Error("Comment not found");
-    }
-
-    return updatedComment;
+): Promise<void> {
+    await axiosInstance.put(`/comments/${commentId}`, { text });
 }
 
 export async function deleteUserComment(commentId: string): Promise<void> {
-    await delay(250);
-
-    userComments = userComments.filter((comment) => comment.id !== commentId);
-}
-
-export async function resetMockUserComments(): Promise<void> {
-    await delay(250);
-
-    userComments = [...mockUserComments];
+    await axiosInstance.delete(`/comments/${commentId}`);
 }

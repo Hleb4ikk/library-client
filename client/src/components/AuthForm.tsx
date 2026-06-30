@@ -48,6 +48,25 @@ export default function AuthForm({
                 />
             </div>
 
+            {!isLogin && (
+                <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        placeholder="Введите email"
+                        error={
+                            (
+                                errors as Partial<
+                                    Record<"email", { message?: string }>
+                                >
+                            ).email?.message
+                        }
+                        {...register("email")}
+                    />
+                </div>
+            )}
+
             <div>
                 <Label htmlFor="password">Пароль</Label>
                 <Input
