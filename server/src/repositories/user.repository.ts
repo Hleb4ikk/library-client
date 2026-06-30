@@ -3,8 +3,12 @@ import { db } from "@/database/db.js";
 import { users } from "@/database/schemas/users.js";
 import type { NewUser, User } from "@/database/schemas/users.js";
 
-export async function createUser(data: NewUser): Promise<{id: number, username: string} | undefined> {
-    const [user] = await db.insert(users).values(data).returning({id: users.id, username: users.username});
+export async function createUser(data: NewUser): Promise<{id: number, username: string, email: string | null} | undefined> {
+    const [user] = await db.insert(users).values(data).returning({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+    });
     return user;
 }
 
@@ -15,6 +19,11 @@ export async function findUserById(id: number): Promise<User | undefined> {
 
 export async function findUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+}
+
+export async function findUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
 }
 

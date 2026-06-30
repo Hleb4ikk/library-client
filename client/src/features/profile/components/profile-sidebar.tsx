@@ -26,7 +26,7 @@ const sidebarItems: Array<{
             icon: "☷",
             path: "/reading-list",
         },
-        { id: "comments", label: "Комментарии", icon: "▱" },
+        { id: "comments", label: "Комментарии", icon: "▱", path: "/comments" },
         { id: "my-search", label: "Поиск по моим", icon: "⌕" },
     ];
 

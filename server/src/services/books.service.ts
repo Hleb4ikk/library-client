@@ -1,6 +1,10 @@
 import axios from "axios";
 import { likesRepository } from "@/repositories/likes.repository.js";
 import { commentsRepository } from "@/repositories/comments.repository.js";
+import {
+  booksCacheRepository,
+  type BookMetadata,
+} from "@/repositories/books-cache.repository.js";
 import ApiError from "@/classes/ApiError.js";
 import { wsService } from "./ws.service.js";
 import { rateLimited } from "@/utils/rate-limiter.utils.js";
@@ -9,6 +13,118 @@ import { generateCacheKey } from "@/utils/cache.utils.js";
 const OPEN_LIBRARY_URL = "https://openlibrary.org";
 
 export const booksService = {
+  async fetchBookMetadataFromOpenLibrary(olid: string): Promise<BookMetadata> {
+    const cacheKey = generateCacheKey("books:metadata", { olid });
+
+    return getOrSet(cacheKey, async () => {
+      const response = await rateLimited(() =>
+        axios.get(`${OPEN_LIBRARY_URL}/search.json`, {
+          params: {
+            q: `key:/works/${olid}`,
+            fields: "key,title,author_name,cover_i",
+            limit: 1,
+          },
+        }),
+      ).catch(() => null);
+
+      const doc = response?.data?.docs?.[0];
+      if (doc) {
+        return {
+          olid,
+          title: doc.title || "Без названия",
+          author: doc.author_name
+            ? doc.author_name.join(", ")
+            : "Неизвестный автор",
+          cover_url: doc.cover_i
+            ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`
+            : null,
+        };
+      }
+
+      const workResponse = await rateLimited(() =>
+        axios.get(`${OPEN_LIBRARY_URL}/works/${olid}.json`),
+      ).catch(() => null);
+
+      if (!workResponse) {
+        throw new ApiError(404, "Книга не найдена в Open Library");
+      }
+
+      const data = workResponse.data;
+      return {
+        olid,
+        title: data.title || "Без названия",
+        author: "Неизвестный автор",
+        cover_url:
+          data.covers && data.covers.length > 0
+            ? `https://covers.openlibrary.org/b/id/${data.covers[0]}-M.jpg`
+            : null,
+      };
+    });
+  },
+
+  async getOrCacheBookMetadata(olid: string): Promise<BookMetadata> {
+    const cached = await booksCacheRepository.findByOlid(olid);
+    if (cached) {
+      return {
+        olid: cached.olid,
+        title: cached.title,
+        author: cached.author,
+        cover_url: cached.coverUrl,
+      };
+    }
+
+    try {
+      const metadata = await this.fetchBookMetadataFromOpenLibrary(olid);
+      const saved = await booksCacheRepository.upsert(metadata);
+      if (!saved) {
+        throw new ApiError(500, "Не удалось сохранить данные книги в кеш");
+      }
+      return metadata;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) {
+        const fallback: BookMetadata = {
+          olid,
+          title: olid,
+          author: "Неизвестный автор",
+          cover_url: null,
+        };
+        const saved = await booksCacheRepository.upsert(fallback);
+        if (!saved) {
+          throw new ApiError(500, "Не удалось сохранить данные книги в кеш");
+        }
+        return fallback;
+      }
+
+      throw error;
+    }
+  },
+
+  async ensureBooksCached(olids: string[]) {
+    const uniqueOlids = [...new Set(olids)];
+    const cachedEntries = await booksCacheRepository.findByOlids(uniqueOlids);
+    const metadataMap = new Map<string, BookMetadata>(
+      cachedEntries.map((entry) => [
+        entry.olid,
+        {
+          olid: entry.olid,
+          title: entry.title,
+          author: entry.author,
+          cover_url: entry.coverUrl,
+        },
+      ]),
+    );
+
+    const missingOlids = uniqueOlids.filter((olid) => !metadataMap.has(olid));
+    await Promise.all(
+      missingOlids.map(async (olid) => {
+        const metadata = await this.getOrCacheBookMetadata(olid);
+        metadataMap.set(olid, metadata);
+      }),
+    );
+
+    return metadataMap;
+  },
+
   async searchBooks(filters: {
     q?: string;
     title?: string;

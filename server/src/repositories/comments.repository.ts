@@ -75,5 +75,37 @@ export const commentsRepository = {
 
   async deleteComment(commentId: number) {
     await db.delete(comments).where(eq(comments.id, commentId));
+  },
+
+  async findCommentsByUserId(userId: number, offset: number, limit: number) {
+    return db
+      .select({
+        id: comments.id,
+        bookOlid: comments.bookOlid,
+        text: comments.text,
+        createdAt: comments.createdAt,
+        updatedAt: comments.updatedAt,
+        user: {
+          id: users.id,
+          username: users.username
+        }
+      })
+      .from(comments)
+      .leftJoin(usersToComments, eq(usersToComments.commentId, comments.id))
+      .leftJoin(users, eq(users.id, usersToComments.userId))
+      .orderBy(desc(comments.createdAt))
+      .limit(limit)
+      .offset(offset);
+  },
+
+  async countCommentsByUserId(userId: number) {
+    const result = await db
+      .select()
+      .from(comments)
+      .leftJoin(usersToComments, eq(usersToComments.commentId, comments.id))
+      .leftJoin(users, eq(users.id, usersToComments.userId))
+      .orderBy(desc(comments.createdAt));
+
+      return Number(result?.length || 0);
   }
 };

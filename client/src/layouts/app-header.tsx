@@ -8,7 +8,7 @@ const cabinetLinks = [
     { label: "Профиль", icon: "♙", path: "/profile" },
     { label: "Мои лайки", icon: "♡", path: "/likes" },
     { label: "Список чтения", icon: "☷", path: "/reading-list" },
-    { label: "Комментарии", icon: "▱" },
+    { label: "Комментарии", icon: "▱", path: "comments" },
     { label: "Поиск по моим", icon: "⌕" },
 ];
 

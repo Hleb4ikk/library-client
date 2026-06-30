@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import AuthPage from "./pages/AuthPage";
 import BookDetailsPage from "./pages/book-details-page";
+import CommentsPage from "./pages/comments-page";
 import HomePage from "./pages/home-page";
 import LikesPage from "./pages/likes-page";
 import ProfilePage from "./pages/profile-page";
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/books/:bookId" element={<BookDetailsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/likes" element={<LikesPage />} />
+        <Route path="/comments" element={<CommentsPage />} />
         <Route path="/reading-list" element={<ReadingListPage />} />
       </Routes>
     </BrowserRouter>
