@@ -68,4 +68,20 @@ export const mockReadingListBooks: Book[] = [
     status: EStatusBadgeVariant.DONE,
     likes: 674,
   },
+  {
+    id: "the-hobbit",
+    title: "The Hobbit",
+    author: "J. R. R. Tolkien",
+    cover: "https://covers.openlibrary.org/b/isbn/9780547928227-L.jpg",
+    likes: 674,
+    isLiked: true,
+  },
+  {
+    id: "the-hobbit",
+    title: "The Hobbit",
+    author: "J. R. R. Tolkien",
+    cover: "https://covers.openlibrary.org/b/isbn/9780547928227-L.jpg",
+    likes: 674,
+    isLiked: true,
+  },
 ];

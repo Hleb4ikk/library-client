@@ -19,7 +19,7 @@ const sidebarItems: Array<{
     path?: string;
 }> = [
         { id: "profile", label: "Профиль", icon: "♙", path: "/profile" },
-        { id: "likes", label: "Мои лайки", icon: "♡" },
+        { id: "likes", label: "Мои лайки", icon: "♡", path: "/likes" },
         {
             id: "reading-list",
             label: "Список чтения",
@@ -42,7 +42,7 @@ export default function ProfileSidebar({
     }
 
     return (
-        <aside className="overflow-hidden rounded-2xl border border-natural/20 bg-ivory-card shadow-card lg:sticky lg:top-24">
+        <aside className="h-fit self-start overflow-hidden rounded-2xl border border-natural/20 bg-ivory-card shadow-card lg:sticky lg:top-24">
             <nav aria-label="Навигация личного кабинета">
                 {sidebarItems.map((item) => {
                     const isActive = item.id === activeItem;
@@ -56,13 +56,13 @@ export default function ProfileSidebar({
                                 "flex w-full items-center gap-3 border-b border-natural/10 px-5 py-4 text-left text-sm font-semibold text-fern transition last:border-b-0 hover:bg-natural/10",
                                 isActive &&
                                 "border-l-4 border-l-apricot bg-apricot/5 pl-4 text-apricot",
-                                !item.path && "cursor-default"
+                                !item.path && "cursor-default",
                             )}
                         >
                             <span
                                 className={twMerge(
                                     "w-5 text-lg leading-none text-natural",
-                                    isActive && "text-apricot"
+                                    isActive && "text-apricot",
                                 )}
                             >
                                 {item.icon}

@@ -6,7 +6,7 @@ import { tokenStorage } from "../api/tokenStorage";
 import { removeUser, useUser } from "../features/auth/user-provider";
 const cabinetLinks = [
     { label: "Профиль", icon: "♙", path: "/profile" },
-    { label: "Мои лайки", icon: "♡" },
+    { label: "Мои лайки", icon: "♡", path: "/likes" },
     { label: "Список чтения", icon: "☷", path: "/reading-list" },
     { label: "Комментарии", icon: "▱", path: "comments" },
     { label: "Поиск по моим", icon: "⌕" },
