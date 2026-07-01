@@ -199,15 +199,16 @@ export const booksService = {
           description = data.description;
         else if (data.description && data.description.value)
           description = data.description.value;
-
+        const coverUrl =
+          data.covers && data.covers.length > 0
+            ? `https://covers.openlibrary.org/b/id/${data.covers[0]}-L.jpg`
+            : null;
         return {
           title: data.title,
           description: description || "Описание отсутствует.",
           covers: data.covers || [],
-          cover_url:
-            data.covers && data.covers.length > 0
-              ? `https://covers.openlibrary.org/b/id/${data.covers[0]}-L.jpg`
-              : null,
+          cover_url: coverUrl,
+          blurhash: await getCoverBlurhash(coverUrl),
         };
       }),
       likesRepository.getLikesCount(olid),
@@ -217,7 +218,6 @@ export const booksService = {
     const isLiked = currentUserId
       ? await likesRepository.checkIsLiked(olid, currentUserId)
       : false;
-
     return {
       olid,
       ...workData,

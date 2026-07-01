@@ -21,4 +21,5 @@ export type BookDetails = {
   isLiked?: boolean;
   readingStatus?: EStatusBadgeVariant;
   comments: BookComment[];
+  blurhash: string | null;
 };

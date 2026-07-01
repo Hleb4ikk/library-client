@@ -281,7 +281,6 @@ export async function getBooks({
 
 export { isRequestAborted };
 
-// API для получения деталей книги
 type BookDetailsResponse = {
   olid: string;
   title: string;
@@ -291,6 +290,7 @@ type BookDetailsResponse = {
   likes_count: number;
   comments_count: number;
   is_liked: boolean;
+  blurhash: string | null;
 };
 
 export async function getBookDetails(
@@ -300,7 +300,7 @@ export async function getBookDetails(
     const response = await axiosInstance.get<
       ApiSuccessResponse<BookDetailsResponse>
     >(`/books/${olid}`);
-
+    console.log(response.data);
     return response.data;
   } catch (error) {
     const message = getApiErrorMessage(error);

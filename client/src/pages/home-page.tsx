@@ -75,7 +75,6 @@ export default function HomePage() {
         if (!isActualRequest) {
           return;
         }
-
         setBooks(result.items);
         setTotalPages(result.totalPages);
         setBooksError(null);
