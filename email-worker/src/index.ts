@@ -1,7 +1,14 @@
 import { emailWorker } from "@/email.worker.js";
-import { createServer } from "http";
+import { createServer } from "node:http";
 
-const httpServer = createServer();
+const httpServer = createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(
+    JSON.stringify({
+      data: "Server running!",
+    }),
+  );
+});
 
 httpServer.listen(8081);
 
