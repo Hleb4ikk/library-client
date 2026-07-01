@@ -10,6 +10,7 @@ import { wsService } from "./ws.service.js";
 import { rateLimited } from "@/utils/rate-limiter.utils.js";
 import { getOrSet } from "@/redis/cache.js";
 import { generateCacheKey } from "@/utils/cache.utils.js";
+import { getCoverBlurhash } from "@/utils/blurhash.utils.js";
 const OPEN_LIBRARY_URL = "https://openlibrary.org";
 
 export const booksService = {
@@ -154,17 +155,24 @@ export const booksService = {
       );
 
       const docs = response.data.docs || [];
-      const formattedBooks = docs.map((book: any) => ({
-        olid: book.key ? book.key.replace("/works/", "") : null,
-        title: book.title,
-        author: book.author_name
-          ? book.author_name.join(", ")
-          : "Неизвестный автор",
-        cover_edition_key: book.cover_edition_key || null,
-        cover_url: book.cover_edition_key
-          ? `https://covers.openlibrary.org/b/olid/${book.cover_edition_key}-M.jpg`
-          : null,
-      }));
+      const formattedBooks = await Promise.all(
+        docs.map(async (book: any) => {
+          const coverUrl = book.cover_edition_key
+            ? `https://covers.openlibrary.org/b/olid/${book.cover_edition_key}-M.jpg`
+            : null;
+
+          return {
+            olid: book.key ? book.key.replace("/works/", "") : null,
+            title: book.title,
+            author: book.author_name
+              ? book.author_name.join(", ")
+              : "Неизвестный автор",
+            cover_edition_key: book.cover_edition_key || null,
+            cover_url: coverUrl,
+            blurhash: await getCoverBlurhash(coverUrl),
+          };
+        }),
+      );
 
       return {
         books: formattedBooks,
