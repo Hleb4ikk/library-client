@@ -53,6 +53,7 @@ export default function BookCard({
         {showCover ? (
           <Img
             src={cover}
+            blurhash={blurhash}
             alt={title}
             loading="lazy"
             decoding="async"

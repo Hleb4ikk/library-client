@@ -22,6 +22,7 @@ export default function BookGrid({
                     title={book.title}
                     author={book.author}
                     cover={book.cover}
+                    blurhash={book.blurhash}
                     status={isAuthorized ? book.status : undefined}
                     likes={book.likes}
                     isLiked={isAuthorized ? book.isLiked : false}

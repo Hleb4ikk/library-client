@@ -5,6 +5,7 @@ export type Book = {
   title: string;
   author: string;
   cover?: string;
+  blurhash?: string;
   status?: EStatusBadgeVariant;
   likes: number;
   isLiked?: boolean;
