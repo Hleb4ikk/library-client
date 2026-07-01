@@ -18,12 +18,23 @@ export const readingListRepository = {
     return items;
   },
 
+  async findAllByUser(userId: number, status: ReadingListStatus | null) {
+    return db
+      .select()
+      .from(readingList)
+      .where(
+        status
+          ? and(eq(readingList.userId, userId), eq(readingList.status, status))
+          : eq(readingList.userId, userId),
+      );
+  },
+
   async countBooksByUser(userId: number, status: ReadingListStatus | null) {
     const result = await db
       .select()
       .from(readingList)
       .where(
-        status 
+        status
           ? and(eq(readingList.userId, userId), eq(readingList.status, status))
           : eq(readingList.userId, userId)
       );

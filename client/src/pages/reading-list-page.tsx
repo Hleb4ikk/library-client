@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 
-import { Badge, Button, Pagination } from "../components/shared";
+import { Badge, Button, Input, Pagination } from "../components/shared";
 import {
   getReadingListBooks,
   removeBookFromReadingList,
   updateReadingListBookStatus,
 } from "../features/books/api/reading-list.api";
 import type { Book } from "../features/books/types/book";
-import ProfileSidebar from "../features/profile/components/profile-sidebar";
-import AppHeader from "../layouts/app-header";
+import ProfileLayout from "../features/profile/components/profile-layout";
 import type { StatusFilter } from "../types/StatusFilter";
 import { EStatusBadgeVariant } from "../enums/EStatusBadgeVariant";
 import type { ButtonVariants } from "../components/shared/badge";
@@ -128,6 +128,9 @@ export default function ReadingListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [searchValue, setSearchValue] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [pagination, setPagination] = useState<PaginationState>({
     total: 0,
     totalPages: 0,
@@ -136,7 +139,7 @@ export default function ReadingListPage() {
   });
 
   const loadReadingListBooks = useCallback(
-    async (page: number, status: StatusFilter) => {
+    async (page: number, status: StatusFilter, query: string) => {
       setIsLoading(true);
       setError("");
 
@@ -145,6 +148,7 @@ export default function ReadingListPage() {
           page,
           limit: BOOKS_PER_PAGE,
           status,
+          q: query,
         });
 
         setBooks(response.items);
@@ -172,11 +176,23 @@ export default function ReadingListPage() {
   );
 
   useEffect(() => {
-    void loadReadingListBooks(currentPage, activeFilter);
-  }, [activeFilter, currentPage, loadReadingListBooks]);
+    void loadReadingListBooks(currentPage, activeFilter, searchQuery);
+  }, [activeFilter, currentPage, searchQuery, loadReadingListBooks]);
 
   function handleFilterChange(filter: StatusFilter) {
     setActiveFilter(filter);
+    setCurrentPage(1);
+  }
+
+  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setCurrentPage(1);
+    setSearchQuery(searchValue.trim());
+  }
+
+  function handleResetSearch() {
+    setSearchValue("");
+    setSearchQuery("");
     setCurrentPage(1);
   }
 
@@ -189,7 +205,7 @@ export default function ReadingListPage() {
     status: EStatusBadgeVariant,
   ) {
     await updateReadingListBookStatus(bookId, status);
-    await loadReadingListBooks(currentPage, activeFilter);
+    await loadReadingListBooks(currentPage, activeFilter, searchQuery);
   }
 
   async function handleDeleteBook(book: Book) {
@@ -200,19 +216,12 @@ export default function ReadingListPage() {
     const nextPage =
       books.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
 
-    await loadReadingListBooks(nextPage, activeFilter);
+    await loadReadingListBooks(nextPage, activeFilter, searchQuery);
   }
 
   return (
-    <div className="min-h-screen bg-ivory text-fern">
-      <AppHeader />
-
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          <ProfileSidebar activeItem="reading-list" />
-
-          <section className="rounded-3xl border border-natural/20 bg-ivory-card p-5 shadow-page sm:p-7">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <ProfileLayout activeItem="reading-list">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-fern">Список чтения</h1>
 
@@ -248,6 +257,33 @@ export default function ReadingListPage() {
               ))}
             </div>
 
+            <form onSubmit={handleSearchSubmit} className="mt-4 flex gap-2">
+              <div className="flex-1">
+                <Input
+                  value={searchValue}
+                  onChange={(event) => setSearchValue(event.target.value)}
+                  placeholder="Поиск по названию или автору..."
+                  className="bg-ivory"
+                  aria-label="Поиск по списку чтения"
+                />
+              </div>
+
+              <Button type="submit" className="h-12 shrink-0 px-6">
+                ⌕ Найти
+              </Button>
+
+              {searchQuery && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleResetSearch}
+                  className="h-12 shrink-0 bg-natural/10 px-4 text-fern hover:bg-natural/20"
+                >
+                  Сброс
+                </Button>
+              )}
+            </form>
+
             {error && (
               <div className="mt-6 rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-semibold text-error">
                 {error}
@@ -282,6 +318,22 @@ export default function ReadingListPage() {
                     onDelete={handleDeleteBook}
                   />
                 ))
+              ) : searchQuery ? (
+                <div className="rounded-2xl border border-natural/25 bg-ivory px-6 py-12 text-center shadow-card">
+                  <p className="text-lg font-bold text-fern">Ничего не найдено</p>
+
+                  <p className="mx-auto mt-2 max-w-md text-sm text-natural-text">
+                    По запросу «{searchQuery}» в списке чтения ничего нет.
+                  </p>
+
+                  <Button
+                    variant="secondary"
+                    onClick={handleResetSearch}
+                    className="mx-auto mt-5 px-5 py-2"
+                  >
+                    Сбросить поиск
+                  </Button>
+                </div>
               ) : (
                 <div className="rounded-2xl border border-natural/25 bg-ivory px-6 py-12 text-center shadow-card">
                   <p className="text-lg font-bold text-fern">
@@ -303,9 +355,6 @@ export default function ReadingListPage() {
                 className="mt-7"
               />
             )}
-          </section>
-        </div>
-      </main>
-    </div>
+    </ProfileLayout>
   );
 }

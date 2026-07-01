@@ -9,8 +9,9 @@ export async function getReadingListItems(req: Request, res: Response) {
     const limit = parseInt(req.query.limit as string) || 4;
     const userId = req.userId!;
     const status = req.query.status as ReadingListStatus ?? null;
+    const q = req.query.q as string | undefined;
 
-    const result = await readingListService.getItems(userId, status, page, limit);
+    const result = await readingListService.getItems(userId, status, page, limit, q);
 
     return res.status(200).json({
       success: true,

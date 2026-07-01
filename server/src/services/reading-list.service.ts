@@ -4,7 +4,18 @@ import ApiError from "@/classes/ApiError.js";
 import { booksService } from "./books.service.js";
 
 export const readingListService = {
-  async getItems(userId: number, status: ReadingListStatus | null, page: number, limit: number) {
+  async getItems(
+    userId: number,
+    status: ReadingListStatus | null,
+    page: number,
+    limit: number,
+    q?: string,
+  ) {
+    const query = q?.trim();
+    if (query) {
+      return this.getFilteredItems(userId, status, page, limit, query);
+    }
+
     const items = await readingListRepository.findBooksByUser(userId, status, page, limit);
     const total = await readingListRepository.countBooksByUser(userId, status);
 
@@ -38,6 +49,69 @@ export const readingListService = {
 
     return {
       items: itemsWithDetails,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  },
+
+  async getFilteredItems(
+    userId: number,
+    status: ReadingListStatus | null,
+    page: number,
+    limit: number,
+    query: string,
+  ) {
+    const allItems = await readingListRepository.findAllByUser(userId, status);
+
+    const emptyResult = {
+      items: [],
+      pagination: { page, limit, total: 0, totalPages: 0 },
+    };
+
+    if (allItems.length === 0) {
+      return emptyResult;
+    }
+
+    const metadataMap = await booksService.ensureBooksCached(
+      allItems.map((item) => item.bookOlid),
+    );
+
+    const normalizedQuery = query.toLowerCase();
+    const filtered = allItems.filter((item) => {
+      const metadata = metadataMap.get(item.bookOlid);
+      const haystack = [
+        item.bookOlid,
+        metadata?.title ?? "",
+        metadata?.author ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(normalizedQuery);
+    });
+
+    const total = filtered.length;
+    const offset = (page - 1) * limit;
+    const paginated = filtered.slice(offset, offset + limit);
+
+    const items = paginated.map((item) => {
+      const metadata = metadataMap.get(item.bookOlid);
+      return {
+        id: item.id,
+        book_olid: item.bookOlid,
+        status: item.status as ReadingListStatus,
+        created_at: item.createdAt,
+        updated_at: item.updatedAt,
+        title: metadata?.title ?? item.bookOlid,
+        cover: metadata?.cover_url ?? null,
+      };
+    });
+
+    return {
+      items,
       pagination: {
         page,
         limit,

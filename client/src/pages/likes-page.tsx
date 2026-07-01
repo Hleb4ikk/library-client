@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { BookCard, Button, Pagination } from "../components/shared";
+import { BookCard, Button, Input, Pagination } from "../components/shared";
 import {
   getLikedBooks,
   removeLikedBook,
 } from "../features/books/api/user-likes.api";
 import type { Book } from "../features/books/types/book";
-import ProfileSidebar from "../features/profile/components/profile-sidebar";
-import AppHeader from "../layouts/app-header";
+import ProfileLayout from "../features/profile/components/profile-layout";
 
 const LIKED_BOOKS_PER_PAGE = 6;
 
@@ -27,6 +27,9 @@ export default function LikesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [searchValue, setSearchValue] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [pagination, setPagination] = useState<PaginationState>({
     total: 0,
     totalPages: 0,
@@ -34,7 +37,7 @@ export default function LikesPage() {
     end: 0,
   });
 
-  const loadLikedBooks = useCallback(async (page: number) => {
+  const loadLikedBooks = useCallback(async (page: number, query: string) => {
     setIsLoading(true);
     setError("");
 
@@ -42,6 +45,7 @@ export default function LikesPage() {
       const response = await getLikedBooks({
         page,
         limit: LIKED_BOOKS_PER_PAGE,
+        q: query,
       });
 
       setBooks(response.items);
@@ -69,11 +73,23 @@ export default function LikesPage() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void loadLikedBooks(currentPage);
-  }, [currentPage, loadLikedBooks]);
+    void loadLikedBooks(currentPage, searchQuery);
+  }, [currentPage, searchQuery, loadLikedBooks]);
 
   function handleOpenBook(book: Book) {
     navigate(`/books/${book.id}`);
+  }
+
+  function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setCurrentPage(1);
+    setSearchQuery(searchValue.trim());
+  }
+
+  function handleResetSearch() {
+    setSearchValue("");
+    setSearchQuery("");
+    setCurrentPage(1);
   }
 
   async function handleRemoveLike(bookId: string) {
@@ -82,20 +98,13 @@ export default function LikesPage() {
     const nextPage =
       books.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
 
-    await loadLikedBooks(nextPage);
+    await loadLikedBooks(nextPage, searchQuery);
   }
 
   return (
-    <div className="min-h-screen bg-ivory text-fern">
-      <AppHeader />
-
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          <ProfileSidebar activeItem="likes" />
-
-          <section className="rounded-3xl border border-natural/20 bg-ivory-card p-5 shadow-page sm:p-7">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
+    <ProfileLayout activeItem="likes">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
                 <h1 className="text-2xl font-bold text-fern">Мои лайки</h1>
               </div>
 
@@ -105,6 +114,33 @@ export default function LikesPage() {
                 </p>
               )}
             </div>
+
+            <form onSubmit={handleSearchSubmit} className="mt-5 flex gap-2">
+              <div className="flex-1">
+                <Input
+                  value={searchValue}
+                  onChange={(event) => setSearchValue(event.target.value)}
+                  placeholder="Поиск по названию или автору..."
+                  className="bg-ivory"
+                  aria-label="Поиск по понравившимся книгам"
+                />
+              </div>
+
+              <Button type="submit" className="h-12 shrink-0 px-6">
+                ⌕ Найти
+              </Button>
+
+              {searchQuery && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleResetSearch}
+                  className="h-12 shrink-0 bg-natural/10 px-4 text-fern hover:bg-natural/20"
+                >
+                  Сброс
+                </Button>
+              )}
+            </form>
 
             {error && (
               <div className="mt-6 rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-semibold text-error">
@@ -151,6 +187,23 @@ export default function LikesPage() {
                     />
                   ))}
                 </div>
+              ) : searchQuery ? (
+                <div className="rounded-2xl border border-natural/25 bg-ivory px-6 py-12 text-center shadow-card">
+                  <p className="text-lg font-bold text-fern">Ничего не найдено</p>
+
+                  <p className="mx-auto mt-2 max-w-md text-sm text-natural-text">
+                    По запросу «{searchQuery}» среди понравившихся книг ничего
+                    нет.
+                  </p>
+
+                  <Button
+                    variant="secondary"
+                    onClick={handleResetSearch}
+                    className="mx-auto mt-5 px-5 py-2"
+                  >
+                    Сбросить поиск
+                  </Button>
+                </div>
               ) : (
                 <div className="rounded-2xl border border-natural/25 bg-ivory px-6 py-12 text-center shadow-card">
                   <p className="text-lg font-bold text-fern">
@@ -172,17 +225,14 @@ export default function LikesPage() {
               )}
             </div>
 
-            {!isLoading && books.length > 0 && (
-              <Pagination
-                page={currentPage}
-                totalPages={pagination.totalPages}
-                onPageChange={setCurrentPage}
-                className="mt-10"
-              />
-            )}
-          </section>
-        </div>
-      </main>
-    </div>
+      {!isLoading && books.length > 0 && (
+        <Pagination
+          page={currentPage}
+          totalPages={pagination.totalPages}
+          onPageChange={setCurrentPage}
+          className="mt-10"
+        />
+      )}
+    </ProfileLayout>
   );
 }

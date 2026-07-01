@@ -31,6 +31,7 @@ type SearchUserBooksData = {
 export type GetLikedBooksParams = {
     page: number;
     limit: number;
+    q?: string;
 };
 
 export type PaginatedLikedBooksResponse = {
@@ -57,11 +58,19 @@ function mapToBook(book: BackendUserBook): Book {
 export async function getLikedBooks({
     page,
     limit,
+    q,
 }: GetLikedBooksParams): Promise<PaginatedLikedBooksResponse> {
+    const trimmedQuery = q?.trim();
+
     const response = await axiosInstance.get<
         ApiSuccessResponse<SearchUserBooksData>
     >("/me/books/search", {
-        params: { type: "likes", page, limit },
+        params: {
+            type: "likes",
+            page,
+            limit,
+            ...(trimmedQuery ? { q: trimmedQuery } : {}),
+        },
     });
 
     const { books, pagination } = response.data.data;

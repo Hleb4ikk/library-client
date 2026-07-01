@@ -93,3 +93,23 @@ export const resendVerificationCode = async (email: string): Promise<void> => {
         throw new Error(getApiErrorMessage(error));
     }
 };
+
+export const forgotPassword = async (email: string): Promise<void> => {
+    try {
+        await axiosInstance.post("/auth/forgot-password", { email });
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error));
+    }
+};
+
+export const resetPassword = async (
+    email: string,
+    code: number,
+    password: string,
+): Promise<void> => {
+    try {
+        await axiosInstance.post("/auth/reset-password", { email, code, password });
+    } catch (error) {
+        throw new Error(getApiErrorMessage(error));
+    }
+};

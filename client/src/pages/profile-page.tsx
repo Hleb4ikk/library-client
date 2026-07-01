@@ -11,8 +11,7 @@ import {
   getProfile,
 } from "../features/profile/api/profile.api";
 import { getUserComments } from "../features/profile/api/user-comments.api";
-import ProfileSidebar from "../features/profile/components/profile-sidebar";
-import AppHeader from "../layouts/app-header";
+import ProfileLayout from "../features/profile/components/profile-layout";
 
 const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
@@ -274,19 +273,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-ivory text-fern">
-      <AppHeader />
-
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="font-playfair text-3xl font-semibold text-fern sm:text-4xl">
-          Личный кабинет
-        </h1>
-
-        <div className="mt-7 grid gap-6 lg:grid-cols-[280px_1fr]">
-          <ProfileSidebar activeItem="profile" />
-
-          <section className="rounded-3xl border border-natural/20 bg-ivory-card p-5 shadow-page sm:p-7">
-            <h2 className="text-2xl font-bold text-fern">Профиль</h2>
+    <ProfileLayout activeItem="profile" title="Личный кабинет">
+      <h2 className="text-2xl font-bold text-fern">Профиль</h2>
 
             <div className="mt-6 rounded-2xl border border-natural/25 bg-ivory px-4 py-5 shadow-card sm:px-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -431,9 +419,6 @@ export default function ProfilePage() {
                 <p className="mt-1 text-sm text-natural-text">Комментариев</p>
               </div>
             </div>
-          </section>
-        </div>
-      </main>
-    </div>
+    </ProfileLayout>
   );
 }

@@ -36,6 +36,7 @@ export type GetReadingListBooksParams = {
   page: number;
   limit: number;
   status?: StatusFilter;
+  q?: string;
 };
 
 export type PaginatedBooksResponse = {
@@ -64,11 +65,17 @@ export async function getReadingListBooks({
   page,
   limit,
   status = "all",
+  q,
 }: GetReadingListBooksParams): Promise<PaginatedBooksResponse> {
   const params: Record<string, string | number> = { page, limit };
 
   if (status !== "all") {
     params.status = status;
+  }
+
+  const trimmedQuery = q?.trim();
+  if (trimmedQuery) {
+    params.q = trimmedQuery;
   }
 
   const response = await axiosInstance.get<ApiSuccessResponse<ReadingListData>>(

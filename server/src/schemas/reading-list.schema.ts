@@ -3,6 +3,7 @@ import { readingListStatuses } from "@/database/schemas/readingList.js";
 
 export const getReadingListQuerySchema = z.object({
   status: z.enum(readingListStatuses, {error: "Невалидный статус"}).optional(),
+  q: z.string().optional(),
   page: z
     .string()
     .optional()

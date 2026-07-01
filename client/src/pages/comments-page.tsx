@@ -7,9 +7,8 @@ import {
     getUserComments,
     updateUserComment,
 } from "../features/profile/api/user-comments.api";
-import ProfileSidebar from "../features/profile/components/profile-sidebar";
+import ProfileLayout from "../features/profile/components/profile-layout";
 import type { UserComment } from "../features/profile/types/user-comment";
-import AppHeader from "../layouts/app-header";
 
 const COMMENTS_PER_PAGE = 3;
 
@@ -256,14 +255,7 @@ export default function CommentsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-ivory text-fern">
-            <AppHeader />
-
-            <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div className="grid items-start gap-6 lg:grid-cols-[280px_1fr]">
-                    <ProfileSidebar activeItem="comments" />
-
-                    <section className="rounded-3xl border border-natural/20 bg-ivory-card p-5 shadow-page sm:p-7">
+        <ProfileLayout activeItem="comments">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <h1 className="text-2xl font-bold text-fern">Комментарии</h1>
@@ -352,9 +344,6 @@ export default function CommentsPage() {
                                 className="mt-7"
                             />
                         )}
-                    </section>
-                </div>
-            </main>
-        </div>
+        </ProfileLayout>
     );
 }
