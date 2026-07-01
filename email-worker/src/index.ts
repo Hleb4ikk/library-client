@@ -1,4 +1,9 @@
 import { emailWorker } from "@/email.worker.js";
+import { createServer } from "http";
+
+const httpServer = createServer();
+
+httpServer.listen(8081);
 
 console.log("[email-worker] запущен, ожидаю задачи из очереди...");
 
